@@ -11,7 +11,9 @@ contract MembershipERC721 is ERC721, Pausable, Ownable, ERC721Burnable, BaseRela
 
     string public override versionRecipient = "2.2.5"; /* version recipient for OpenGSN */
 
-    constructor() ERC721("MyToken", "MTK") {}
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+        pause();
+    }
 
     function _baseURI() internal pure override returns (string memory) {
         return "https://clubhouse.com/testing";
