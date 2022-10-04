@@ -3,12 +3,13 @@ pragma solidity ^0.8.4;
 
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract MembershipERC721 is ERC721, Pausable, Ownable, ERC721Burnable, BaseRelayRecipient {
+contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721Burnable, BaseRelayRecipient {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -38,9 +39,20 @@ contract MembershipERC721 is ERC721, Pausable, Ownable, ERC721Burnable, BaseRela
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
         internal
         whenNotPaused
-        override
+        override(ERC721, ERC721Enumerable)
     {
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 
     /// @notice Provides access to message sender of a meta transaction (EIP-2771)
