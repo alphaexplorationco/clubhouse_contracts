@@ -2,27 +2,16 @@
 pragma solidity ^0.8.4;
 
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-contract MyToken is Initializable, ERC721Upgradeable, PausableUpgradeable, OwnableUpgradeable, ERC721BurnableUpgradeable, BaseRelayRecipient {
+contract MembershipERC721 is ERC721, Pausable, Ownable, ERC721Burnable, BaseRelayRecipient {
 
     string public override versionRecipient = "2.2.5"; /* version recipient for OpenGSN */
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
-        _disableInitializers();
-    }
-
-    function initialize(string memory name, string memory symbol) initializer public {
-        __ERC721_init(name, symbol);
-        __Pausable_init();
-        __Ownable_init();
-        __ERC721Burnable_init();
-    }
+    constructor() ERC721("MyToken", "MTK") {}
 
     function _baseURI() internal pure override returns (string memory) {
         return "https://clubhouse.com/testing";
@@ -49,13 +38,13 @@ contract MyToken is Initializable, ERC721Upgradeable, PausableUpgradeable, Ownab
     }
 
     /// @notice Provides access to message sender of a meta transaction (EIP-2771)
-    function _msgSender() internal view override(ContextUpgradeable, BaseRelayRecipient)
+    function _msgSender() internal view override(Context, BaseRelayRecipient)
         returns (address sender) {
         sender = BaseRelayRecipient._msgSender();
     }
 
     /// @notice Provides access to message data of a meta transaction (EIP-2771)
-    function _msgData() internal view override(ContextUpgradeable, BaseRelayRecipient)
+    function _msgData() internal view override(Context, BaseRelayRecipient)
         returns (bytes calldata) {
         return BaseRelayRecipient._msgData();
     }
