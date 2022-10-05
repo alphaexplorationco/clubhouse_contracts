@@ -13,9 +13,14 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
-    string public override versionRecipient = "2.2.5"; /* version recipient for OpenGSN */
+    /* Version recipient for OpenGSN */
+    string public override versionRecipient = "2.2.5"; 
+    // Mapping from owner to list of 
+    mapping(address => uint256) private _membershipExpiryDates;
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {}
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+        pause();
+    }
 
     function _baseURI() internal pure override returns (string memory) {
         return "https://clubhouse.com/testing";
@@ -29,11 +34,12 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
         _unpause();
     }
 
-    function safeMint(address to) public onlyOwner {
+    function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         _safeMint(to, tokenId);
+        _membershipExpiryDates[to] = expiryTimestamp;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
