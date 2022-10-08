@@ -15,8 +15,8 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
     Counters.Counter private _tokenIdCounter;
     /* Version recipient for OpenGSN */
     string public override versionRecipient = "2.2.5"; 
-    // Mapping from owner to list of 
-    mapping(address => uint256) private _membershipExpiryDates;
+    // Mapping from owner to membership expiry timestamp 
+    mapping(address => uint256) private _membershipExpiryTimestamps;
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         pause();
@@ -39,7 +39,7 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
         _tokenIdCounter.increment();
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         _safeMint(to, tokenId);
-        _membershipExpiryDates[to] = expiryTimestamp;
+        _membershipExpiryTimestamps[to] = expiryTimestamp;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
@@ -71,5 +71,10 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
     function _msgData() internal view override(Context, BaseRelayRecipient)
         returns (bytes calldata) {
         return BaseRelayRecipient._msgData();
+    }
+
+    /// @notice Updates the expiry timestamp for a given address
+    function updateExpiryTimestamp(address to, uint256 updatedTimestamp) public onlyOwner {
+        _membershipExpiryTimestamps[to] = updatedTimestamp;
     }
 }
