@@ -1,6 +1,5 @@
 import { DefenderRelayProvider, DefenderRelaySigner } from 'defender-relay-client/lib/ethers';
 import { ethers } from 'hardhat';
-import {saveContractAddress} from './utils';
 
 async function main() {
   require('dotenv').config();
@@ -18,7 +17,6 @@ async function main() {
   await membership.deployed();
 
   console.log(`MembershipERC721 deployed to ${membership.address} with name = ${name} and symbol = ${symbol}`);
-  saveContractAddress(contractName, chainId, membership.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
