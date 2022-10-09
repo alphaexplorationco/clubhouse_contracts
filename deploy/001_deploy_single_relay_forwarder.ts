@@ -1,19 +1,20 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import {DeployFunction} from 'hardhat-deploy/types';
-import { DefenderRelayProvider, DefenderRelaySigner } from 'defender-relay-client/lib/ethers';
+import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers } from 'hardhat';
+import { getSignerForNetwork } from '../src/hardhatDeployUtils'
+import { string } from 'hardhat/internal/core/params/argumentTypes';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  require('dotenv').config();
-  const credentials = {apiKey: process.env.GOERLI_DEFENDER_RELAY_API_KEY, apiSecret: process.env.GOERLI_DEFENDER_RELAY_API_SECRET};
-  const provider = new DefenderRelayProvider(credentials);
-  const relaySigner = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
-  const chainId = await relaySigner.getChainId()
- 
-  const Forwarder = await ethers.getContractFactory("SingleRelayForwarder")
-  const forwarder = await Forwarder.connect(relaySigner)
+  const forwarderContractName = "SingleRelayForwarder" 
+  console.log(`Deploying contract ${forwarderContractName}`)
+
+  const signer = await getSignerForNetwork(hre.network.name)   
+  const Forwarder = await ethers.getContractFactory(forwarderContractName)
+  console.log(`\tCreated contract factory for ${forwarderContractName}`)
+
+  const forwarder = await Forwarder.connect(signer)
     .deploy()
     .then((f) => f.deployed())
-  console.log(`${forwarder.name} address: ${forwarder.address}`)
+  console.log(`\tDeployed ${forwarderContractName} to ${hre.network.name} (chainID = ${await hre.getChainId()}) at address ${forwarder.address}`)
 };
 export default func;
