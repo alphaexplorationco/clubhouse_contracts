@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * An OpenGSN style Forwarder that forwards meta transactions (EIP-2771)
  * from a single relayer address
  */
- contract SingleRelayerForwarder is Initializable, EIP712Upgradeable {
+ contract SingleRelayForwarder is Initializable, EIP712Upgradeable {
     using ECDSAUpgradeable for bytes32;
 
     struct ForwardRequest {
@@ -34,11 +34,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
       _;
     }
 
-    function __SingleRelayerForwarder_init() internal onlyInitializing {
+    function __SingleRelayForwarder_init() internal onlyInitializing {
         __EIP712_init_unchained("MinimalForwarder", "0.0.1");
     }
 
-    function __SingleRelayerForwarder_init_unchained() internal onlyInitializing {}
+    function __SingleRelayForwarder_init_unchained() internal onlyInitializing {}
 
     function getNonce(address from) public view returns (uint256) {
         return _nonces[from];
@@ -80,7 +80,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
     }
 
     function setUp(address relayer) public initializer {
-        __SingleRelayerForwarder_init();
+        __SingleRelayForwarder_init();
         _relayer = relayer;
     }
 
