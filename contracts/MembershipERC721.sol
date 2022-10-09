@@ -20,9 +20,10 @@ contract MembershipERC721 is ERC721Upgradeable, PausableUpgradeable, OwnableUpgr
     // Mapping from owner to tokenId
     mapping(address => uint256) private _ownerTokenIds;
 
-    function setUp(string memory name, string memory symbol) public initializer {
+    function setUp(string memory name, string memory symbol, address trustedForwarder) public initializer {
         __ERC721_init(name, symbol);
         pause();
+        _setTrustedForwarder(trustedForwarder);
     }
 
     function _baseURI() internal pure override returns (string memory) {
