@@ -2,23 +2,24 @@
 pragma solidity ^0.8.4;
 
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
-contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721Burnable, BaseRelayRecipient {
-    using Counters for Counters.Counter;
+contract MembershipERC721 is ERC721Upgradeable, ERC721EnumerableUpgradeable, PausableUpgradeable, OwnableUpgradeable, ERC721BurnableUpgradeable, BaseRelayRecipient {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
-    Counters.Counter private _tokenIdCounter;
+    CountersUpgradeable.Counter private _tokenIdCounter;
     /* Version recipient for OpenGSN */
     string public override versionRecipient = "2.2.5"; 
     // Mapping from owner to membership expiry timestamp 
     mapping(address => uint256) private _membershipExpiryTimestamps;
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    setUp(string memory name, string memory symbol) initializer {
+        __ERC721_init(name, symbol);
         pause();
     }
 
@@ -45,7 +46,7 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
         internal
         whenNotPaused
-        override(ERC721, ERC721Enumerable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
     {
         super._beforeTokenTransfer(from, to, tokenId);
     }
@@ -55,20 +56,20 @@ contract MembershipERC721 is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
 
     /// @notice Provides access to message sender of a meta transaction (EIP-2771)
-    function _msgSender() internal view override(Context, BaseRelayRecipient)
+    function _msgSender() internal view override(ContextUpgradeable, BaseRelayRecipient)
         returns (address sender) {
         sender = BaseRelayRecipient._msgSender();
     }
 
     /// @notice Provides access to message data of a meta transaction (EIP-2771)
-    function _msgData() internal view override(Context, BaseRelayRecipient)
+    function _msgData() internal view override(ContextUpgradeable, BaseRelayRecipient)
         returns (bytes calldata) {
         return BaseRelayRecipient._msgData();
     }
