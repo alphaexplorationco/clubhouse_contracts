@@ -137,12 +137,7 @@ export async function deployContract(
         spinner: "dots",
     });
 
-    console.log(`Deploying contract ${name}...`);
-
-    // Create contract factory
-    spinner.start(`Creating contract factory for ${name}`);
-    const contractFactory = await ethers.getContractFactory(name);
-    spinner.succeed();
+    console.log(`Starting deploy for contract ${name}.sol ...`);
 
     // Get signer for network
     const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
@@ -158,6 +153,29 @@ export async function deployContract(
     spinner.succeed(
         `Created ${signerType} signer with address ${await signer.getAddress()}`
     );
+
+
+    // Check if deployed contract is different from compiled contract
+    spinner.start(`Checking if contract has changed since last deploy`)
+    const {differences, address} = await hre.deployments.fetchIfDifferent(name, {
+      contract: name,
+      from: await signer.getAddress(),
+      args: contractConstructorArgs,
+      skipIfAlreadyDeployed: true
+    })
+    if(!differences){
+      spinner.stopAndPersist({
+        symbol: "⚠️",
+        text: `Contract has not changed since last deploy. Stopping.`
+      })
+      return
+    }
+
+
+    // Create contract factory
+    spinner.start(`Creating contract factory for ${name}`);
+    const contractFactory = await ethers.getContractFactory(name);
+    spinner.succeed();
 
     // Deploy contract
     spinner.start(

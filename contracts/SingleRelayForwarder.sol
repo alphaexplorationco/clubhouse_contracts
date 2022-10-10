@@ -36,8 +36,9 @@ contract SingleRelayForwarder is Initializable, EIP712Upgradeable {
         _;
     }
 
-    function __SingleRelayForwarder_init() internal onlyInitializing {
+    function __SingleRelayForwarder_init(address relayer) internal onlyInitializing {
         __EIP712_init_unchained("MinimalForwarder", "0.0.1");
+        _relayer = relayer; 
     }
 
     function __SingleRelayForwarder_init_unchained()
@@ -104,7 +105,7 @@ contract SingleRelayForwarder is Initializable, EIP712Upgradeable {
     }
 
     function setUp(address relayer) public initializer {
-        __SingleRelayForwarder_init();
+        __SingleRelayForwarder_init(relayer);
         _relayer = relayer;
     }
 

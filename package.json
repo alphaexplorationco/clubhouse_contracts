@@ -44,6 +44,8 @@
     "prettier-plugin-solidity": "^1.0.0-beta.24"
   },
   "scripts": {
-    "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write"
+    "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write",
+    "local-deploy": "yarn hardhat deploy --network hardhat --export-all ./deploy.json --write True",
+    "testnet-deploy": "yarn hardhat deploy --network goerli --export-all ./deploy.json --write True"
   }
 }
