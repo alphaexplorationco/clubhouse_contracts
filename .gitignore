@@ -10,3 +10,7 @@ cache
 artifacts
 
 .DS_Store
+
+# Local deployments
+deployments/hardhat
+deployments/localhost
