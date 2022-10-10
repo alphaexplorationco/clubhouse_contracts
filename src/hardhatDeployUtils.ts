@@ -1,16 +1,16 @@
 import { DefenderRelayProvider, DefenderRelaySigner } from "defender-relay-client/lib/ethers"
-import { Signer } from "ethers"
+import { Contract, ContractFactory, Signer } from "ethers"
 import { ethers } from "hardhat"
-import { GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET } from "../hardhat.config"
+import * as dotenv from "dotenv"
+import { DeploymentsExtension, DeploymentSubmission } from "hardhat-deploy/types" 
+import { HardhatRuntimeEnvironment } from "hardhat/types"
 
-function getDefenderRelaySignerAndProvider(apiKey: string, apiSecret: string): Signer {
-  require('dotenv').config()
-  if(apiKey === undefined){
-    throw TypeError("Relayer API key is undefined")
-  }
-  if(apiSecret === undefined){
-    throw TypeError("Relayer API secret is undefined")
-  }
+dotenv.config()
+
+const GOERLI_DEFENDER_RELAY_API_KEY = process.env.GOERLI_DEFENDER_RELAY_API_KEY || ""
+const GOERLI_DEFENDER_RELAY_API_SECRET = process.env.GOERLI_DEFENDER_RELAY_API_SECRET || ""
+
+function getDefenderRelaySigner(apiKey: string, apiSecret: string): Signer {
   const credentials = {apiKey: apiKey, apiSecret: apiSecret}
   const provider = new DefenderRelayProvider(credentials)
   const relaySigner = new DefenderRelaySigner(credentials, provider, { speed: 'fast' })
@@ -18,14 +18,37 @@ function getDefenderRelaySignerAndProvider(apiKey: string, apiSecret: string): S
   return relaySigner
 }
 
-export async function getSignerForNetwork(network: string): Promise<Signer> {
+async function getSignerForNetwork(network: string): Promise<Signer> {
     switch(network){
       case "hardhat":
         const signers = await ethers.getSigners()
         return signers[0]
       case "goerli":
-        return getDefenderRelaySignerAndProvider(GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET)
+        return getDefenderRelaySigner(GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET)
       default:
         throw Error(`Cannot get signer for unrecognized network ${network}. Add network to hardhat.config.ts`)
     }
+}
+
+export async function deployContract(name: string, hre: HardhatRuntimeEnvironment): Promise<void> {
+  console.log(`Deploying contract ${name}`)
+
+  const contractFactory = await ethers.getContractFactory(name)
+  console.log(`\tCreated contract factory for ${name}`)
+
+  const signer = await getSignerForNetwork(hre.network.name)
+  console.log(`\tCreated signer for network ${hre.network.name}`)
+
+  const contract = await contractFactory.connect(signer)
+    .deploy()
+    .then((f) => f.deployed())
+  console.log(`\tDeployed ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`)
+  
+  const artifact = await hre.deployments.getExtendedArtifact(name)
+  const deploymentSubmission = {
+    address: contract.address,
+    ...artifact,
+  }
+  await hre.deployments.save(name, deploymentSubmission)
+  console.log(`Saved deployment`)
 }
