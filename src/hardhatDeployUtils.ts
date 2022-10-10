@@ -1,9 +1,9 @@
 import { DefenderRelayProvider, DefenderRelaySigner } from "defender-relay-client/lib/ethers"
-import { Contract, ContractFactory, Signer } from "ethers"
+import { Signer } from "ethers"
 import { ethers } from "hardhat"
 import * as dotenv from "dotenv"
-import { DeploymentsExtension, DeploymentSubmission } from "hardhat-deploy/types" 
 import { HardhatRuntimeEnvironment } from "hardhat/types"
+import ora from "ora"
 
 dotenv.config()
 
@@ -31,24 +31,37 @@ async function getSignerForNetwork(network: string): Promise<Signer> {
 }
 
 export async function deployContract(name: string, hre: HardhatRuntimeEnvironment): Promise<void> {
-  console.log(`Deploying contract ${name}`)
 
+  // Async import here since ora cannot be 'require'd in commonjs
+  console.log(`Deploying contract ${name}...`)
+
+  const spinner = ora({
+    discardStdin: false,
+    spinner: "dots",
+  });
+
+  spinner.text = `Creating contract factory for ${name}` 
+  spinner.start()
   const contractFactory = await ethers.getContractFactory(name)
-  console.log(`\tCreated contract factory for ${name}`)
+  spinner.succeed()
 
+  const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay"
+  spinner.start(`Creating ${signerType} signer`)
   const signer = await getSignerForNetwork(hre.network.name)
-  console.log(`\tCreated signer for network ${hre.network.name}`)
+  spinner.succeed(`Created ${signerType} signer with address ${await signer.getAddress()}`)
 
+  spinner.start(`Deploying ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId})`)
   const contract = await contractFactory.connect(signer)
     .deploy()
     .then((f) => f.deployed())
-  console.log(`\tDeployed ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`)
-  
+  spinner.succeed(`Deployed network to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`)
+ 
+  spinner.start(`Saving artifacts`)
   const artifact = await hre.deployments.getExtendedArtifact(name)
   const deploymentSubmission = {
     address: contract.address,
     ...artifact,
   }
   await hre.deployments.save(name, deploymentSubmission)
-  console.log(`Saved deployment`)
+  spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`)
 }
