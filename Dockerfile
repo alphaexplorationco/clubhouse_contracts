@@ -1,7 +1,15 @@
-FROM node:current-alpine3.15
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y sudo curl 
 
-# Install yarn and other dependencies via apk
-RUN apk add --update git python3 make g++ && \
-  rm -rf /tmp/* /var/cache/apk/*
-
-WORKDIR /usr/app
+RUN groupadd -r newuser && useradd -r -g newuser newuser
+RUN adduser newuser sudo
+RUN adduser --disabled-password \
+--gecos '' docker
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> \
+/etc/sudoers
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+RUN apt-get install -y gcc g++ make
+RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarnkey.gpg >/dev/null
+RUN echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get update && apt-get install -y yarn
