@@ -8,6 +8,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 func.tags = ['test'];
 func.skip =async (hre: HardhatRuntimeEnvironment) => {
-  return !["hardhat", "localhost"].includes(hre.network.name)
+  return !["hardhat", "localhost", "goerli"].includes(hre.network.name)
 }
 export default func;
