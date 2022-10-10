@@ -4,7 +4,7 @@ import { deployContract } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const testNFTContractName = "TestERC721"
-  await deployContract(testNFTContractName, hre)
+  await deployContract(hre, testNFTContractName)
 };
 func.tags = ['test'];
 func.skip =async (hre: HardhatRuntimeEnvironment) => {

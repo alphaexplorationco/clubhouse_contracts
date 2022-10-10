@@ -42,16 +42,17 @@ async function getSignerForNetwork(network: string): Promise<Signer> {
 }
 
 export async function deployContract(
+    hre: HardhatRuntimeEnvironment,
     name: string,
-    hre: HardhatRuntimeEnvironment
+    ...contractConstructorArgs: Array<any>
 ): Promise<void> {
-    // Async import here since ora cannot be 'require'd in commonjs
-    console.log(`Deploying contract ${name}...`);
-
     const spinner = ora({
         discardStdin: false,
         spinner: "dots",
     });
+
+    // Async import here since ora cannot be 'require'd in commonjs
+    console.log(`Deploying contract ${name}...`);
 
     spinner.text = `Creating contract factory for ${name}`;
     spinner.start();
@@ -66,14 +67,14 @@ export async function deployContract(
     );
 
     spinner.start(
-        `Deploying ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId})`
+        `Deploying ${name} to ${hre.network.name} with args = ${contractConstructorArgs}`
     );
     const contract = await contractFactory
         .connect(signer)
-        .deploy()
+        .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
     spinner.succeed(
-        `Deployed network to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`
+        `Deployed network to ${hre.network.name} at address ${contract.address} with args = ${contractConstructorArgs || "[]"}`
     );
 
     spinner.start(`Saving artifacts`);
