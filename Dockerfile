@@ -1,12 +1,7 @@
-FROM node:carbon-alpine
+FROM node:current-alpine3.15
 
 # Install yarn and other dependencies via apk
-RUN apk add --update git python make g++ && \
+RUN apk add --update git python3 make g++ && \
   rm -rf /tmp/* /var/cache/apk/*
 
 WORKDIR /usr/app
-
-# Install node dependencies - done in a separate step so Docker can cache it.
-COPY . .
-
-RUN yarn install --frozen-lockfile
