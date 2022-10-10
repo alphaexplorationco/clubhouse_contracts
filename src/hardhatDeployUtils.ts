@@ -74,7 +74,9 @@ export async function deployContract(
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
     spinner.succeed(
-        `Deployed network to ${hre.network.name} at address ${contract.address} with args = ${contractConstructorArgs || "[]"}`
+        `Deployed network to ${hre.network.name} at address ${
+            contract.address
+        } with args = ${contractConstructorArgs || "[]"}`
     );
 
     spinner.start(`Saving artifacts`);
