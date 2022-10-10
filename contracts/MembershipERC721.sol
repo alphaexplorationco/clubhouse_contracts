@@ -7,20 +7,29 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
-contract MembershipERC721 is ERC721Upgradeable, PausableUpgradeable, OwnableUpgradeable, BaseRelayRecipient {
+contract MembershipERC721 is
+    ERC721Upgradeable,
+    PausableUpgradeable,
+    OwnableUpgradeable,
+    BaseRelayRecipient
+{
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     CountersUpgradeable.Counter private _tokenIdCounter;
     /* Version recipient for OpenGSN */
-    string public override versionRecipient = "2.2.5"; 
+    string public override versionRecipient = "2.2.5";
 
-    // Mapping from tokenId to membership expiry timestamp 
+    // Mapping from tokenId to membership expiry timestamp
     mapping(uint256 => uint256) private _tokenIdExpiryTimestamps;
 
     // Mapping from owner to tokenId
     mapping(address => uint256) private _ownerTokenIds;
 
-    function setUp(string memory name, string memory symbol, address trustedForwarder) public initializer {
+    function setUp(
+        string memory name,
+        string memory symbol,
+        address trustedForwarder
+    ) public initializer {
         __ERC721_init(name, symbol);
         pause();
         _setTrustedForwarder(trustedForwarder);
@@ -51,19 +60,30 @@ contract MembershipERC721 is ERC721Upgradeable, PausableUpgradeable, OwnableUpgr
     // The following functions are overrides required by Solidity.
 
     /// @notice Provides access to message sender of a meta transaction (EIP-2771)
-    function _msgSender() internal view override(ContextUpgradeable, BaseRelayRecipient)
-        returns (address sender) {
+    function _msgSender()
+        internal
+        view
+        override(ContextUpgradeable, BaseRelayRecipient)
+        returns (address sender)
+    {
         sender = BaseRelayRecipient._msgSender();
     }
 
     /// @notice Provides access to message data of a meta transaction (EIP-2771)
-    function _msgData() internal view override(ContextUpgradeable, BaseRelayRecipient)
-        returns (bytes calldata) {
+    function _msgData()
+        internal
+        view
+        override(ContextUpgradeable, BaseRelayRecipient)
+        returns (bytes calldata)
+    {
         return BaseRelayRecipient._msgData();
     }
 
     /// @notice Updates the expiry timestamp for a given address
-    function updateExpiryTimestamp(address to, uint256 updatedTimestamp) public onlyOwner {
+    function updateExpiryTimestamp(address to, uint256 updatedTimestamp)
+        public
+        onlyOwner
+    {
         uint256 tokenId = _ownerTokenIds[to];
         _tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
     }

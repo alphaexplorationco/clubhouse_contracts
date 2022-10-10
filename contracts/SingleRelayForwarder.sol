@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * An OpenGSN style Forwarder that forwards meta transactions (EIP-2771)
  * from a single relayer address
  */
- contract SingleRelayForwarder is Initializable, EIP712Upgradeable {
+contract SingleRelayForwarder is Initializable, EIP712Upgradeable {
     using ECDSAUpgradeable for bytes32;
 
     struct ForwardRequest {
@@ -23,30 +23,50 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
     }
 
     bytes32 private constant _TYPEHASH =
-        keccak256("ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data)");
- 
+        keccak256(
+            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data)"
+        );
+
     address private _relayer;
 
     mapping(address => uint256) private _nonces;
 
-    modifier onlyRelayer {
-      require(msg.sender == _relayer, "msg.sender != _relayer");
-      _;
+    modifier onlyRelayer() {
+        require(msg.sender == _relayer, "msg.sender != _relayer");
+        _;
     }
 
     function __SingleRelayForwarder_init() internal onlyInitializing {
         __EIP712_init_unchained("MinimalForwarder", "0.0.1");
     }
 
-    function __SingleRelayForwarder_init_unchained() internal onlyInitializing {}
+    function __SingleRelayForwarder_init_unchained()
+        internal
+        onlyInitializing
+    {}
 
     function getNonce(address from) public view returns (uint256) {
         return _nonces[from];
     }
 
-    function verify(ForwardRequest calldata req, bytes calldata signature) public view onlyRelayer returns (bool) {
+    function verify(ForwardRequest calldata req, bytes calldata signature)
+        public
+        view
+        onlyRelayer
+        returns (bool)
+    {
         address signer = _hashTypedDataV4(
-            keccak256(abi.encode(_TYPEHASH, req.from, req.to, req.value, req.gas, req.nonce, keccak256(req.data)))
+            keccak256(
+                abi.encode(
+                    _TYPEHASH,
+                    req.from,
+                    req.to,
+                    req.value,
+                    req.gas,
+                    req.nonce,
+                    keccak256(req.data)
+                )
+            )
         ).recover(signature);
         return _nonces[req.from] == req.nonce && signer == req.from;
     }
@@ -57,12 +77,16 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
         onlyRelayer
         returns (bool, bytes memory)
     {
-        require(verify(req, signature), "MinimalForwarder: signature does not match request");
+        require(
+            verify(req, signature),
+            "MinimalForwarder: signature does not match request"
+        );
         _nonces[req.from] = req.nonce + 1;
 
-        (bool success, bytes memory returndata) = req.to.call{gas: req.gas, value: req.value}(
-            abi.encodePacked(req.data, req.from)
-        );
+        (bool success, bytes memory returndata) = req.to.call{
+            gas: req.gas,
+            value: req.value
+        }(abi.encodePacked(req.data, req.from));
 
         // Validate that the relayer has sent enough gas for the call.
         // See https://ronan.eth.limo/blog/ethereum-gas-dangers/
@@ -85,7 +109,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
     }
 
     function updateRelayer(address newRelayer) public onlyRelayer {
-        _relayer = newRelayer; 
+        _relayer = newRelayer;
     }
 
     /**
@@ -95,5 +119,3 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
      */
     uint256[49] private __gap;
 }
-
-

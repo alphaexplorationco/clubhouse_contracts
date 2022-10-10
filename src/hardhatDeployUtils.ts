@@ -1,67 +1,87 @@
-import { DefenderRelayProvider, DefenderRelaySigner } from "defender-relay-client/lib/ethers"
-import { Signer } from "ethers"
-import { ethers } from "hardhat"
-import * as dotenv from "dotenv"
-import { HardhatRuntimeEnvironment } from "hardhat/types"
-import ora from "ora"
+import {
+    DefenderRelayProvider,
+    DefenderRelaySigner,
+} from "defender-relay-client/lib/ethers";
+import { Signer } from "ethers";
+import { ethers } from "hardhat";
+import * as dotenv from "dotenv";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import ora from "ora";
 
-dotenv.config()
+dotenv.config();
 
-const GOERLI_DEFENDER_RELAY_API_KEY = process.env.GOERLI_DEFENDER_RELAY_API_KEY || ""
-const GOERLI_DEFENDER_RELAY_API_SECRET = process.env.GOERLI_DEFENDER_RELAY_API_SECRET || ""
+const GOERLI_DEFENDER_RELAY_API_KEY = process.env.GOERLI_DEFENDER_RELAY_API_KEY || "";
+const GOERLI_DEFENDER_RELAY_API_SECRET =
+    process.env.GOERLI_DEFENDER_RELAY_API_SECRET || "";
 
 function getDefenderRelaySigner(apiKey: string, apiSecret: string): Signer {
-  const credentials = {apiKey: apiKey, apiSecret: apiSecret}
-  const provider = new DefenderRelayProvider(credentials)
-  const relaySigner = new DefenderRelaySigner(credentials, provider, { speed: 'fast' })
+    const credentials = { apiKey: apiKey, apiSecret: apiSecret };
+    const provider = new DefenderRelayProvider(credentials);
+    const relaySigner = new DefenderRelaySigner(credentials, provider, {
+        speed: "fast",
+    });
 
-  return relaySigner
+    return relaySigner;
 }
 
 async function getSignerForNetwork(network: string): Promise<Signer> {
-    switch(network){
-      case "hardhat":
-        const signers = await ethers.getSigners()
-        return signers[0]
-      case "goerli":
-        return getDefenderRelaySigner(GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET)
-      default:
-        throw Error(`Cannot get signer for unrecognized network ${network}. Add network to hardhat.config.ts`)
+    switch (network) {
+        case "hardhat":
+            const signers = await ethers.getSigners();
+            return signers[0];
+        case "goerli":
+            return getDefenderRelaySigner(
+                GOERLI_DEFENDER_RELAY_API_KEY,
+                GOERLI_DEFENDER_RELAY_API_SECRET
+            );
+        default:
+            throw Error(
+                `Cannot get signer for unrecognized network ${network}. Add network to hardhat.config.ts`
+            );
     }
 }
 
-export async function deployContract(name: string, hre: HardhatRuntimeEnvironment): Promise<void> {
+export async function deployContract(
+    name: string,
+    hre: HardhatRuntimeEnvironment
+): Promise<void> {
+    // Async import here since ora cannot be 'require'd in commonjs
+    console.log(`Deploying contract ${name}...`);
 
-  // Async import here since ora cannot be 'require'd in commonjs
-  console.log(`Deploying contract ${name}...`)
+    const spinner = ora({
+        discardStdin: false,
+        spinner: "dots",
+    });
 
-  const spinner = ora({
-    discardStdin: false,
-    spinner: "dots",
-  });
+    spinner.text = `Creating contract factory for ${name}`;
+    spinner.start();
+    const contractFactory = await ethers.getContractFactory(name);
+    spinner.succeed();
 
-  spinner.text = `Creating contract factory for ${name}` 
-  spinner.start()
-  const contractFactory = await ethers.getContractFactory(name)
-  spinner.succeed()
+    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
+    spinner.start(`Creating ${signerType} signer`);
+    const signer = await getSignerForNetwork(hre.network.name);
+    spinner.succeed(
+        `Created ${signerType} signer with address ${await signer.getAddress()}`
+    );
 
-  const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay"
-  spinner.start(`Creating ${signerType} signer`)
-  const signer = await getSignerForNetwork(hre.network.name)
-  spinner.succeed(`Created ${signerType} signer with address ${await signer.getAddress()}`)
+    spinner.start(
+        `Deploying ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId})`
+    );
+    const contract = await contractFactory
+        .connect(signer)
+        .deploy()
+        .then((f) => f.deployed());
+    spinner.succeed(
+        `Deployed network to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`
+    );
 
-  spinner.start(`Deploying ${name} to ${hre.network.name} (chainID = ${hre.network.config.chainId})`)
-  const contract = await contractFactory.connect(signer)
-    .deploy()
-    .then((f) => f.deployed())
-  spinner.succeed(`Deployed network to ${hre.network.name} (chainID = ${hre.network.config.chainId}) at address ${contract.address}`)
- 
-  spinner.start(`Saving artifacts`)
-  const artifact = await hre.deployments.getExtendedArtifact(name)
-  const deploymentSubmission = {
-    address: contract.address,
-    ...artifact,
-  }
-  await hre.deployments.save(name, deploymentSubmission)
-  spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`)
+    spinner.start(`Saving artifacts`);
+    const artifact = await hre.deployments.getExtendedArtifact(name);
+    const deploymentSubmission = {
+        address: contract.address,
+        ...artifact,
+    };
+    await hre.deployments.save(name, deploymentSubmission);
+    spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
 }

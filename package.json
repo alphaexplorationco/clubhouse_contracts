@@ -23,6 +23,7 @@
     "hardhat": "^2.11.2",
     "hardhat-deploy": "^0.11.18",
     "hardhat-gas-reporter": "^1.0.8",
+    "prettier": "^2.7.1",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typechain": "^8.1.0",
@@ -37,6 +38,10 @@
     "defender-base-client": "^1.31.1",
     "defender-relay-client": "^1.31.1",
     "dotenv": "^16.0.3",
-    "ora": "5.4.0"
+    "ora": "5.4.0",
+    "prettier-plugin-solidity": "^1.0.0-beta.24"
+  },
+  "scripts": {
+    "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write"
   }
 }
