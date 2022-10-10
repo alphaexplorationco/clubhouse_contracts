@@ -1,15 +1,10 @@
-import { Provider } from "@ethersproject/providers";
-import { Contract, Signer } from "ethers";
-import { DefenderRelayProvider, DefenderRelaySigner} from 'defender-relay-client/lib/ethers';
-import { ethers } from 'hardhat';
-import path from "path";
-import fs from "fs";
-import { DeploymentSubmission, ABI } from 'hardhat-deploy/types';
+import { DefenderRelayProvider, DefenderRelaySigner } from "defender-relay-client/lib/ethers"
+import { Signer } from "ethers"
+import { ethers } from "hardhat"
+import { GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET } from "../hardhat.config"
 
-function getDefenderRelaySignerAndProvider(apiKeyVarName: string, apiSecretVarName: string): Signer {
+function getDefenderRelaySignerAndProvider(apiKey: string, apiSecret: string): Signer {
   require('dotenv').config()
-  const apiKey = process.env[apiKeyVarName]
-  const apiSecret = process.env[apiSecretVarName]
   if(apiKey === undefined){
     throw TypeError("Relayer API key is undefined")
   }
@@ -23,56 +18,14 @@ function getDefenderRelaySignerAndProvider(apiKeyVarName: string, apiSecretVarNa
   return relaySigner
 }
 
-
 export async function getSignerForNetwork(network: string): Promise<Signer> {
-    switch(network) {
-        case "goerli":
-            return getDefenderRelaySignerAndProvider("GOERLI_DEFENDER_RELAY_API_KEY", "GOERLI_DEFENDER_RELAY_API_SECRET")
-        case "hardhat":
-            const signers = await ethers.getSigners()
-            return signers[0]
-        default:
-            throw Error(`Cannot create signer for unrecognized network name ${network}`)
+    switch(network){
+      case "hardhat":
+        const signers = await ethers.getSigners()
+        return signers[0]
+      case "goerli":
+        return getDefenderRelaySignerAndProvider(GOERLI_DEFENDER_RELAY_API_KEY, GOERLI_DEFENDER_RELAY_API_SECRET)
+      default:
+        throw Error(`Cannot get signer for unrecognized network ${network}. Add network to hardhat.config.ts`)
     }
-}
-
-function getContractAbi(contract: Contract): ABI {
-  const dir = path.resolve(
-    __dirname,
-    `./artifacts/contracts/HelloWorld.sol/${contract.name}.json`
-  )
-  const file = fs.readFileSync(dir, "utf8")
-  const json = JSON.parse(file)
-  const abi = json.abi
-  console.log(`abi`, abi)
-  return abi
-}
-
-export function saveDeployment(contract: Contract) {
-  const deploymentToSave: DeploymentSubmission = {
-    abi: getContractAbi(contract),
-    address: forwarder.address,
-    receipt: forwarder.rece
-    transactionHash?: string;
-    history?: Deployment[];
-    implementation?: string;
-    args?: any[];
-    linkedData?: any;
-    solcInput?: string;
-    solcInputHash?: string;
-    metadata?: string;
-    bytecode?: string;
-    deployedBytecode?: string;
-    userdoc?: any;
-    devdoc?: any;
-    methodIdentifiers?: any;
-    facets?: Facet[];
-    execute?: {
-      methodName: string;
-      args: any[];
-    };
-    storageLayout?: any;
-    libraries?: Libraries;
-    gasEstimates?: any;
-  }
 }

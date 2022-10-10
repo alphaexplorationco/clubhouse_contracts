@@ -32,6 +32,9 @@
     "@opengsn/contracts": "^2.2.6",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.8.0-rc.1",
+    "amazon-cognito-identity-js": "^5.2.10",
+    "aws-sdk": "^2.1231.0",
+    "defender-base-client": "^1.31.1",
     "defender-relay-client": "^1.31.1",
     "dotenv": "^16.0.3"
   }
