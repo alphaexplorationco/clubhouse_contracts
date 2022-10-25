@@ -22,10 +22,9 @@ async function handler(event) {
   const credentials = { ... event };
   const provider = new DefenderRelayProvider(credentials);
   const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
-  const chainId = await signer.getChainId()
 
-  const forwarderAddress = FORWARDER_DATA.forwarderAddress
-  const forwarder = new ethers.Contract(forwarderAddress, FORWARDER_DATA.forwarderAbi, signer);
+  const forwarderAddress = FORWARDER_DATA.address
+  const forwarder = new ethers.Contract(forwarderAddress, FORWARDER_DATA.abi, signer);
 
   // Relay transaction!
   const tx = await relay(forwarder, request, signature);

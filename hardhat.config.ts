@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
+import "solidity-coverage"
 
 
 const config: HardhatUserConfig = {
@@ -20,6 +21,11 @@ const config: HardhatUserConfig = {
         tags: ["local"]
       },
   },
+  paths: {
+      deploy: "deploy",
+      deployments: "deployments",
+      imports: "node_modules/@daohaus/baal-contracts/artifacts"
+  }
 };
 
 export default config;

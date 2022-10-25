@@ -3,7 +3,8 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { deployContract } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const membershipContractName = "MembershipERC721"
-  await deployContract(hre, membershipContractName)
+  const forwarderContractName = "MinimalForwarder" 
+  await deployContract(hre, forwarderContractName)
 };
 export default func;
+func.tags = ['test', 'staging'];

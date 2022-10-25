@@ -44,6 +44,7 @@ function getDefenderRelaySigner(apiKey: string, apiSecret: string): Signer {
 
 async function getSignerForNetwork(network: string): Promise<Signer> {
     switch (network) {
+        case "localhost":
         case "hardhat":
             const signers = await ethers.getSigners();
             return signers[0];
@@ -85,13 +86,13 @@ export async function updateDefenderAutotaskCodeForNetwork(
     }
     spinner.succeed(`Created autotask client`);
 
-    spinner.start(`Fetching SingleRelayForwarder contract ABI and address`);
+    spinner.start(`Fetching MinimalForwarder contract ABI and address`);
     // Create forwarder.json in tempdir with forwarder contract address and ABI
-    const forwarderDeployment = hre.deployments.get("SingleRelayForwarder");
+    const forwarderDeployment = hre.deployments.get("MinimalForwarder");
     const abi = (await forwarderDeployment).abi;
     const address = (await forwarderDeployment).address;
     spinner.succeed(
-        `Fetched SingleRelayForwarder contract ABI and address = ${address}`
+        `Fetched MinimalForwarder contract ABI and address = ${address}`
     );
 
     // Create temp dir
@@ -131,7 +132,7 @@ export async function deployContract(
     hre: HardhatRuntimeEnvironment,
     name: string,
     ...contractConstructorArgs: Array<any>
-): Promise<void> {
+): Promise<string> {
     const spinner = ora({
         discardStdin: false,
         spinner: "dots",
@@ -144,51 +145,30 @@ export async function deployContract(
     spinner.start(`Creating ${signerType} signer`);
     const signer = await getSignerForNetwork(hre.network.name);
     const signerChainId = await signer.getChainId();
-    if (signerChainId != hre.network.config.chainId) {
+    const runtimeChainId = Number(await hre.getChainId())
+    if (signerChainId != runtimeChainId) {
         spinner.fail();
         throw Error(
-            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${hre.network.config.chainId})`
+            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
         );
     }
     spinner.succeed(
         `Created ${signerType} signer with address ${await signer.getAddress()}`
     );
 
-
-    // Check if deployed contract is different from compiled contract
-    spinner.start(`Checking if contract has changed since last deploy`)
-    const {differences, address} = await hre.deployments.fetchIfDifferent(name, {
-      contract: name,
-      from: await signer.getAddress(),
-      args: contractConstructorArgs,
-      skipIfAlreadyDeployed: true
-    })
-    if(!differences){
-      spinner.stopAndPersist({
-        symbol: "⚠️",
-        text: `Contract has not changed since last deploy. Stopping.`
-      })
-      return
-    }
-
-
-    // Create contract factory
-    spinner.start(`Creating contract factory for ${name}`);
-    const contractFactory = await ethers.getContractFactory(name);
-    spinner.succeed();
-
     // Deploy contract
     spinner.start(
         `Deploying ${name} to ${hre.network.name} with args = ${contractConstructorArgs}`
     );
+    const contractFactory = await ethers.getContractFactory(name);
     const contract = await contractFactory
         .connect(signer)
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
     spinner.succeed(
-        `Deployed network to ${hre.network.name} at address ${
+        `Deployed ${name} to ${hre.network.name} at address ${
             contract.address
-        } with args = ${contractConstructorArgs || "[]"}`
+        } with args = [${contractConstructorArgs}]`
     );
 
     // Save artifacts
@@ -200,4 +180,6 @@ export async function deployContract(
     };
     await hre.deployments.save(name, deploymentSubmission);
     spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
+
+    return contract.address
 }
