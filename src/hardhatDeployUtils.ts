@@ -91,9 +91,7 @@ export async function updateDefenderAutotaskCodeForNetwork(
     const forwarderDeployment = hre.deployments.get("MinimalForwarder");
     const abi = (await forwarderDeployment).abi;
     const address = (await forwarderDeployment).address;
-    spinner.succeed(
-        `Fetched MinimalForwarder contract ABI and address = ${address}`
-    );
+    spinner.succeed(`Fetched MinimalForwarder contract ABI and address = ${address}`);
 
     // Create temp dir
     spinner.start(`Writing forwarder contract data and code template to temporary dir`);
@@ -145,7 +143,7 @@ export async function deployContract(
     spinner.start(`Creating ${signerType} signer`);
     const signer = await getSignerForNetwork(hre.network.name);
     const signerChainId = await signer.getChainId();
-    const runtimeChainId = Number(await hre.getChainId())
+    const runtimeChainId = Number(await hre.getChainId());
     if (signerChainId != runtimeChainId) {
         spinner.fail();
         throw Error(
@@ -166,9 +164,7 @@ export async function deployContract(
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
     spinner.succeed(
-        `Deployed ${name} to ${hre.network.name} at address ${
-            contract.address
-        } with args = [${contractConstructorArgs}]`
+        `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
     );
 
     // Save artifacts
@@ -181,5 +177,5 @@ export async function deployContract(
     await hre.deployments.save(name, deploymentSubmission);
     spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
 
-    return contract.address
+    return contract.address;
 }

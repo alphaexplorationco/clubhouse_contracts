@@ -55,10 +55,10 @@ contract MembershipERC721 is
     function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
         _ownerTokenIds[to] = tokenId;
+        _tokenIdCounter.increment();
     }
 
     /// @notice Updates the expiry timestamp for a given address
@@ -91,12 +91,18 @@ contract MembershipERC721 is
         _setTrustedForwarder(_newTrustedFowarder);
     }
 
+    /// @notice Gets the tokenId for a given address. Since a single address can only hold
+    /// a single token, each address corresponds to at most one tokenId
+    function getTokenId(address tokenHolder) public view returns (uint256) {
+        return _ownerTokenIds[tokenHolder];
+    }
+
     /// @notice Pre-transfer hook that locks token transfers for this contract
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override(ERC721Upgradeable){
+    ) internal virtual override(ERC721Upgradeable) {
         require(from == address(0), "non transferable");
         super._beforeTokenTransfer(from, to, tokenId);
     }

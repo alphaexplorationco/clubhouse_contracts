@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @dev Upgraded version of conracts/MembershipERC721 for tests. This version has two differences
 /// from the original:
-/// (1) Adds an owner-only method to set the trusted forwarder address 
+/// (1) Adds an owner-only method to set the trusted forwarder address
 /// (2) Drop non-transferability, so that NFTs from this contract are transferrable between addresses
 contract MembershipERC721V2 is
     Initializable,
