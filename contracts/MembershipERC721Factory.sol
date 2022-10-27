@@ -7,7 +7,12 @@ import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "./MembershipERC721.sol";
 
 contract MembershipERC721Factory {
-    mapping(uint256 => address) private membershipProxies;
+    event MembershipERC721ProxyCreated(
+        address proxyAddress,
+        string name,
+        string symbol
+    );
+
     UpgradeableBeacon immutable beacon;
 
     constructor(address _initBlueprint) {
@@ -18,36 +23,21 @@ contract MembershipERC721Factory {
     function buildMembershipERC721Proxy(
         string memory _name,
         string memory _symbol,
-        address _trustedForwarder,
-        uint32 _displayType,
-        uint256 _socialClubId
+        address _trustedForwarder
     ) public {
-        address proxyAddress = membershipProxies[_socialClubId];
-        require(
-            proxyAddress == address(0),
-            "membership proxy exists for social club"
-        );
         BeaconProxy membershipProxy = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
                 MembershipERC721(address(0)).setUp.selector,
                 _name,
                 _symbol,
-                _trustedForwarder,
-                _displayType
+                _trustedForwarder
             )
         );
-        proxyAddress = address(membershipProxy);
+        address proxyAddress = address(membershipProxy);
         MembershipERC721(proxyAddress).transferOwnership(tx.origin);
-        membershipProxies[_socialClubId] = proxyAddress;
-    }
 
-    function getMembershipERC721ProxyAddress(uint256 socialClubId)
-        external
-        view
-        returns (address)
-    {
-        return membershipProxies[socialClubId];
+        emit MembershipERC721ProxyCreated(proxyAddress, _name, _symbol);
     }
 
     function getBeacon() public view returns (address) {

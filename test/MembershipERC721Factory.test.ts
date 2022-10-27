@@ -24,12 +24,14 @@ describe("Membership NFT Proxy Factory Contract", function () {
     beacon = Beacon.attach(beaconAddress);
 
     // Create proxies to be used in tests
-    const createProxy1Tx = await proxyFactory.functions.buildMembershipERC721Proxy("TEST1", "T1", forwarder.address, 1, 1);
-    await createProxy1Tx.wait();
-    proxy1 = Implementation.attach((await proxyFactory.functions.getMembershipERC721ProxyAddress(1))[0]);
-    const createProxy2Tx = await proxyFactory.functions.buildMembershipERC721Proxy("TEST2", "T2", forwarder.address, 100, 2);
-    await createProxy2Tx.wait();
-    proxy2 = Implementation.attach((await proxyFactory.functions.getMembershipERC721ProxyAddress(2))[0]);
+    const createProxy1Tx = await proxyFactory.functions.buildMembershipERC721Proxy("TEST1", "T1", forwarder.address);
+    const createProxy1TxReceipt = await createProxy1Tx.wait();
+    const proxy1Address = await createProxy1TxReceipt.events.slice(-1)[0].args.proxyAddress
+    proxy1 = Implementation.attach(proxy1Address);
+    const createProxy2Tx = await proxyFactory.functions.buildMembershipERC721Proxy("TEST2", "T2", forwarder.address);
+    const createProxy2TxReceipt = await createProxy2Tx.wait();
+    const proxy2Address = await createProxy2TxReceipt.events.slice(-1)[0].args.proxyAddress
+    proxy2 = Implementation.attach(proxy2Address)
 
     // Mint one token from first proxy to wallet
     const [tokenOwner] = (await ethers.getSigners()); 
@@ -50,15 +52,8 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(beaconImplementationAddress).to.equal(implementation.address);
   });
 
-  it("buildMembershipERC721Proxy should revert if proxy exists for social club id", async function () {
-    await expect(
-      proxyFactory.buildMembershipERC721Proxy("TEST", "T", forwarder.address, 1, 1)
-      ).to.be.revertedWith("membership proxy exists for social club");
-  });
-
   it("buildMembershipERC721Proxy should create proxy if does not exist for social club id", async function () {
-    const [proxyAddress] = await proxyFactory.functions.getMembershipERC721ProxyAddress(2);
-    const proxy = Implementation.attach(proxyAddress);
+    const proxy = Implementation.attach(proxy2.address);
     const [expectedOwner] = (await ethers.getSigners());
     const [proxyOwnerAddress] = await proxy.functions.owner()
     const [proxyForwarderAddress] = await proxy.functions.trustedForwarder();
@@ -68,19 +63,6 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(proxyTokenName).to.equal("TEST2");
     expect(proxyTokenSymbol).to.equal("T2");
     expect(proxyForwarderAddress).to.equal(forwarder.address);
-  });
-
-  it("getMembershipERC721ProxyAddress should fetch proxy for correct social club id ", async function () {
-    const [proxy1Address] = await proxyFactory.functions.getMembershipERC721ProxyAddress(1);
-    const [proxy2Address] = await proxyFactory.functions.getMembershipERC721ProxyAddress(2);
-    const fetchedProxy1 = Implementation.attach(proxy1Address);
-    const fetchedProxy2 = Implementation.attach(proxy2Address);
-    expect(fetchedProxy1.address).to.equal(proxy1.address);
-    expect(fetchedProxy2.address).to.equal(proxy2.address);
-    expect((await fetchedProxy1.functions.name())[0]).to.equal("TEST1");
-    expect((await fetchedProxy2.functions.name())[0]).to.equal("TEST2");
-    expect((await fetchedProxy1.functions.symbol())[0]).to.equal("T1");
-    expect((await fetchedProxy2.functions.symbol())[0]).to.equal("T2");
   });
 
   it("getBeacon should return beacon address", async function () {

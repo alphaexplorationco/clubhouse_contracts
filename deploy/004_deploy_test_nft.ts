@@ -7,5 +7,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const trustedForwarderAddress = (await hre.deployments.get("MinimalForwarder")).address
   await deployContract(hre, testNFTContractName, trustedForwarderAddress)
 };
-func.tags = ['test'];
 export default func;
+func.tags = ['test', 'staging'];

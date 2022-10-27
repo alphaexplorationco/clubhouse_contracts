@@ -7,6 +7,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 contract MembershipERC721 is
     Initializable,
@@ -17,17 +19,15 @@ contract MembershipERC721 is
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     CountersUpgradeable.Counter private _tokenIdCounter;
+
     /* Version recipient for OpenGSN */
     string public override versionRecipient = "2.2.5";
 
     // Mapping from tokenId to membership expiry timestamp
-    mapping(uint256 => uint256) private _tokenIdExpiryTimestamps;
+    mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
 
     // Mapping from owner to tokenId
-    mapping(address => uint256) private _ownerTokenIds;
-
-    // NFT display type. This will determine which of the preset NFT displays will be rendered in wallets / NFT viewers
-    uint32 private displayType;
+    mapping(address => uint256) private ownerTokenIds;
 
     constructor() {
         _disableInitializers();
@@ -36,18 +36,16 @@ contract MembershipERC721 is
     function setUp(
         string memory _name,
         string memory _symbol,
-        address _trustedForwarder,
-        uint32 _displayType
+        address _trustedForwarder
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init();
         _setTrustedForwarder(_trustedForwarder);
-        displayType = _displayType;
     }
 
     function _baseURI() internal pure override returns (string memory) {
         // TODO(akshaan): Replace with true URL once the image rendering service / endpoint is set up
-        return "https://clubhouse.com/nft";
+        return "https://clubhouse.com/nft/";
     }
 
     /// @notice Mints an ERC-721 token to the address `to` with a subscription
@@ -56,8 +54,8 @@ contract MembershipERC721 is
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
-        _tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
-        _ownerTokenIds[to] = tokenId;
+        tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
+        ownerTokenIds[to] = tokenId;
         _tokenIdCounter.increment();
     }
 
@@ -66,24 +64,14 @@ contract MembershipERC721 is
         public
         onlyOwner
     {
-        uint256 tokenId = _ownerTokenIds[to];
-        _tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
+        uint256 tokenId = ownerTokenIds[to];
+        tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
     }
 
     /// @notice Gets the expiry timestamp for a given address
     function getExpiryTimestamp(address to) public view returns (uint256) {
-        uint256 tokenId = _ownerTokenIds[to];
-        return _tokenIdExpiryTimestamps[tokenId];
-    }
-
-    /// @notice Updates the NFT display type for a given address
-    function setDisplayType(uint32 _displayType) public onlyOwner {
-        displayType = _displayType;
-    }
-
-    /// @notice Gets the expiry timestamp for a given address
-    function getDisplayType() public view returns (uint32) {
-        return displayType;
+        uint256 tokenId = ownerTokenIds[to];
+        return tokenIdExpiryTimestamps[tokenId];
     }
 
     /// @notice Sets the trusted forwarder for meta-transactions (EIP-2771)
@@ -91,10 +79,41 @@ contract MembershipERC721 is
         _setTrustedForwarder(_newTrustedFowarder);
     }
 
-    /// @notice Gets the tokenId for a given address. Since a single address can only hold
-    /// a single token, each address corresponds to at most one tokenId
-    function getTokenId(address tokenHolder) public view returns (uint256) {
-        return _ownerTokenIds[tokenHolder];
+    /// @notice Generates the token URI for a particular token ID
+    function tokenURI(uint256 _tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        _requireMinted(_tokenId);
+
+        string memory _nftName = string(abi.encodePacked(name()));
+
+        bytes memory _image = abi.encodePacked(
+            _baseURI(),
+            StringsUpgradeable.toHexString(uint256(uint160(address(this))), 20),
+            "_",
+            StringsUpgradeable.toString(_tokenId),
+            ".png"
+        );
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64Upgradeable.encode(
+                        bytes(
+                            abi.encodePacked(
+                                '{"name":"',
+                                _nftName,
+                                '","image":"',
+                                _image,
+                                '"}'
+                            )
+                        )
+                    )
+                )
+            );
     }
 
     /// @notice Pre-transfer hook that locks token transfers for this contract
