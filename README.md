@@ -31,11 +31,11 @@ This project uses the [hardhat](https://hardhat.org/) ethereum tools for solidit
 
 ## Contracts
 
-# MembershipERC721
+### MembershipERC721
 An extension of the OpenZeppelin's upgradeable ERC721 contract that add's additional metadata for subscriptions
 
-# MembershipERC721Factory
+### MembershipERC721Factory
 A proxy factory for MembershipERC721, using the Beacon Proxy pattern to create multiple upgradeable replicas of the underlying contract
 
-# fixtures/forwarder.sol
+### fixtures/forwarder.sol
 This file allows us to include OpenZeppelin's meta-transaction forwarder contracts for use with OpenZeppelin Defender Relays
