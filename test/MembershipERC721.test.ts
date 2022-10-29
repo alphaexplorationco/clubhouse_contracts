@@ -57,9 +57,9 @@ describe("Membership NFT Contract", function () {
   });
 
   it("updateExpiryTimestamp and getExpiryTimestamp should set/get expiry timestamp correctly", async function () {
-    expect((await proxy.functions.getExpiryTimestamp(addressWithBalance))[0]).to.equal(1)
-    await (await proxy.functions.updateExpiryTimestamp(addressWithBalance, 23)).wait()
-    expect((await proxy.functions.getExpiryTimestamp(addressWithBalance))[0]).to.equal(23)
+    expect((await proxy.functions.getExpiryTimestamp(addressWithBalanceTokenId))[0]).to.equal(1)
+    await (await proxy.functions.updateExpiryTimestamp(addressWithBalanceTokenId, 23)).wait()
+    expect((await proxy.functions.getExpiryTimestamp(addressWithBalanceTokenId))[0]).to.equal(23)
   });
 
   it("updateExpiryTimestamp should revert if called by non-owner address", async function () {

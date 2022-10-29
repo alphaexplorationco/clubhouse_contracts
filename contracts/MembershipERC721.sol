@@ -26,9 +26,6 @@ contract MembershipERC721 is
     // Mapping from tokenId to membership expiry timestamp
     mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
 
-    // Mapping from owner to tokenId
-    mapping(address => uint256) private ownerTokenIds;
-
     constructor() {
         _disableInitializers();
     }
@@ -55,22 +52,19 @@ contract MembershipERC721 is
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
         tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
-        ownerTokenIds[to] = tokenId;
         _tokenIdCounter.increment();
     }
 
     /// @notice Updates the expiry timestamp for a given address
-    function updateExpiryTimestamp(address to, uint256 updatedTimestamp)
+    function updateExpiryTimestamp(uint256 tokenId, uint256 updatedTimestamp)
         public
         onlyOwner
     {
-        uint256 tokenId = ownerTokenIds[to];
         tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
     }
 
     /// @notice Gets the expiry timestamp for a given address
-    function getExpiryTimestamp(address to) public view returns (uint256) {
-        uint256 tokenId = ownerTokenIds[to];
+    function getExpiryTimestamp(uint256 tokenId) public view returns (uint256) {
         return tokenIdExpiryTimestamps[tokenId];
     }
 
@@ -122,7 +116,7 @@ contract MembershipERC721 is
         address to,
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable) {
-        require(from == address(0), "non transferable");
+        require(from == address(0) || to == address(0), "non transferable");
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
