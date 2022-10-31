@@ -13,4 +13,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployContract(hre, membershipFactoryName, membershipImplemenationAddress)
 };
 export default func;
-func.tags = ['test', 'staging'];
+func.tags = ['test', 'staging', 'membership'];

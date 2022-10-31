@@ -1301,7 +1301,7 @@
       "chainId": "31337",
       "contracts": {
         "Baal": {
-          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
           "abi": [
             {
               "inputs": [],
@@ -2855,7 +2855,7 @@
           ]
         },
         "BaalSummoner": {
-          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+          "address": "0x9A676e781A523b5d0C0e43731313A708CB607508",
           "abi": [
             {
               "inputs": [
@@ -3242,7 +3242,7 @@
           ]
         },
         "CompatibilityFallbackHandler": {
-          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
           "abi": [
             {
               "inputs": [],
@@ -3570,7 +3570,7 @@
           ]
         },
         "GnosisSafe": {
-          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
           "abi": [
             {
               "inputs": [],
@@ -4606,7 +4606,7 @@
           ]
         },
         "GnosisSafeProxyFactory": {
-          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
           "abi": [
             {
               "anonymous": false,
@@ -4772,7 +4772,7 @@
           ]
         },
         "Loot": {
-          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
           "abi": [
             {
               "inputs": [],
@@ -5622,46 +5622,14 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "getDisplayType",
-              "outputs": [
-                {
-                  "internalType": "uint32",
-                  "name": "",
-                  "type": "uint32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
-                  "internalType": "address",
-                  "name": "to",
-                  "type": "address"
-                }
-              ],
-              "name": "getExpiryTimestamp",
-              "outputs": [
-                {
                   "internalType": "uint256",
-                  "name": "",
+                  "name": "tokenId",
                   "type": "uint256"
                 }
               ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "tokenHolder",
-                  "type": "address"
-                }
-              ],
-              "name": "getTokenId",
+              "name": "getExpiryTimestamp",
               "outputs": [
                 {
                   "internalType": "uint256",
@@ -5857,19 +5825,6 @@
             {
               "inputs": [
                 {
-                  "internalType": "uint32",
-                  "name": "_displayType",
-                  "type": "uint32"
-                }
-              ],
-              "name": "setDisplayType",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
                   "internalType": "address",
                   "name": "_newTrustedFowarder",
                   "type": "address"
@@ -5896,11 +5851,6 @@
                   "internalType": "address",
                   "name": "_trustedForwarder",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "_displayType",
-                  "type": "uint32"
                 }
               ],
               "name": "setUp",
@@ -5944,7 +5894,7 @@
               "inputs": [
                 {
                   "internalType": "uint256",
-                  "name": "tokenId",
+                  "name": "_tokenId",
                   "type": "uint256"
                 }
               ],
@@ -6011,9 +5961,9 @@
             {
               "inputs": [
                 {
-                  "internalType": "address",
-                  "name": "to",
-                  "type": "address"
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
                 },
                 {
                   "internalType": "uint256",
@@ -6096,11 +6046,6 @@
                   "internalType": "address",
                   "name": "_trustedForwarder",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "_displayType",
-                  "type": "uint32"
                 }
               ],
               "name": "buildMembershipERC721Proxy",
@@ -6136,13 +6081,21 @@
             }
           ]
         },
-        "MinimalForwarder": {
-          "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        "MinimalForwarderUpgradeable": {
+          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
           "abi": [
             {
-              "inputs": [],
-              "stateMutability": "nonpayable",
-              "type": "constructor"
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "uint8",
+                  "name": "version",
+                  "type": "uint8"
+                }
+              ],
+              "name": "Initialized",
+              "type": "event"
             },
             {
               "inputs": [
@@ -6179,7 +6132,7 @@
                       "type": "bytes"
                     }
                   ],
-                  "internalType": "struct MinimalForwarder.ForwardRequest",
+                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
@@ -6259,7 +6212,7 @@
                       "type": "bytes"
                     }
                   ],
-                  "internalType": "struct MinimalForwarder.ForwardRequest",
+                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
@@ -6283,7 +6236,7 @@
           ]
         },
         "ModuleProxyFactory": {
-          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
           "abi": [
             {
               "inputs": [],
@@ -6363,7 +6316,7 @@
           ]
         },
         "MultiSend": {
-          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
           "abi": [
             {
               "inputs": [],
@@ -6386,7 +6339,7 @@
           ]
         },
         "Shares": {
-          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+          "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
           "abi": [
             {
               "inputs": [],
@@ -7249,7 +7202,7 @@
           ]
         },
         "TestERC721": {
-          "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           "abi": [
             {
               "inputs": [
@@ -8341,13 +8294,21 @@
             }
           ]
         },
-        "MinimalForwarder": {
-          "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        "Forwarder": {
+          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
           "abi": [
             {
-              "inputs": [],
-              "stateMutability": "nonpayable",
-              "type": "constructor"
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "uint8",
+                  "name": "version",
+                  "type": "uint8"
+                }
+              ],
+              "name": "Initialized",
+              "type": "event"
             },
             {
               "inputs": [
@@ -8384,7 +8345,7 @@
                       "type": "bytes"
                     }
                   ],
-                  "internalType": "struct MinimalForwarder.ForwardRequest",
+                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
@@ -8430,6 +8391,13 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "initialize",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "components": [
@@ -8464,7 +8432,7 @@
                       "type": "bytes"
                     }
                   ],
-                  "internalType": "struct MinimalForwarder.ForwardRequest",
+                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
@@ -8488,7 +8456,7 @@
           ]
         },
         "TestERC721": {
-          "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           "abi": [
             {
               "inputs": [
@@ -8944,7 +8912,7 @@
           ]
         },
         "Baal": {
-          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
           "abi": [
             {
               "inputs": [],
@@ -10498,7 +10466,7 @@
           ]
         },
         "GnosisSafe": {
-          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
           "abi": [
             {
               "inputs": [],
@@ -11534,7 +11502,7 @@
           ]
         },
         "GnosisSafeProxyFactory": {
-          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
           "abi": [
             {
               "anonymous": false,
@@ -11700,7 +11668,7 @@
           ]
         },
         "ModuleProxyFactory": {
-          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
           "abi": [
             {
               "inputs": [],
@@ -11780,7 +11748,7 @@
           ]
         },
         "CompatibilityFallbackHandler": {
-          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
           "abi": [
             {
               "inputs": [],
@@ -12108,7 +12076,7 @@
           ]
         },
         "MultiSend": {
-          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
           "abi": [
             {
               "inputs": [],
@@ -12131,7 +12099,7 @@
           ]
         },
         "Loot": {
-          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
           "abi": [
             {
               "inputs": [],
@@ -12810,7 +12778,7 @@
           ]
         },
         "Shares": {
-          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+          "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
           "abi": [
             {
               "inputs": [],
@@ -13673,7 +13641,7 @@
           ]
         },
         "BaalSummoner": {
-          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+          "address": "0x9A676e781A523b5d0C0e43731313A708CB607508",
           "abi": [
             {
               "inputs": [

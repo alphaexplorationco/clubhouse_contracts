@@ -2,8 +2,8 @@ import {
     DefenderRelayProvider,
     DefenderRelaySigner,
 } from "defender-relay-client/lib/ethers";
-import { Signer } from "ethers";
-import { ethers } from "hardhat";
+import { Contract, Signer } from "ethers";
+import { ethers, upgrades } from "hardhat";
 import * as dotenv from "dotenv";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import ora from "ora";
@@ -158,11 +158,14 @@ export async function deployContract(
     spinner.start(
         `Deploying ${name} to ${hre.network.name} with args = ${contractConstructorArgs}`
     );
-    const contractFactory = await ethers.getContractFactory(name);
-    const contract = await contractFactory
-        .connect(signer)
+    const contractFactory = (await ethers.getContractFactory(name)).connect(signer);
+
+    let contract: Contract
+    contract = await contractFactory
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
+    await contract.deployed()
+    
     spinner.succeed(
         `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
     );
@@ -175,6 +178,67 @@ export async function deployContract(
         ...artifact,
     };
     await hre.deployments.save(name, deploymentSubmission);
+
+    spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
+
+    return contract.address;
+}
+
+export async function deployTransparentUpgradeableContract(
+    hre: HardhatRuntimeEnvironment,
+    name: string,
+    initializerName: string | false,
+    ...contractConstructorArgs: Array<any>
+): Promise<string> {
+    const spinner = ora({
+        discardStdin: false,
+        spinner: "dots",
+    });
+
+    console.log(`Starting deploy for contract ${name}.sol ...`);
+
+    // Get signer for network
+    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
+    spinner.start(`Creating ${signerType} signer`);
+    const signer = await getSignerForNetwork(hre.network.name);
+    const signerChainId = await signer.getChainId();
+    const runtimeChainId = Number(await hre.getChainId());
+    if (signerChainId != runtimeChainId) {
+        spinner.fail();
+        throw Error(
+            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
+        );
+    }
+    spinner.succeed(
+        `Created ${signerType} signer with address ${await signer.getAddress()}`
+    );
+
+    // Deploy contract
+    spinner.start(
+        `Deploying ${name} to ${hre.network.name} with args = ${contractConstructorArgs}`
+    );
+    const contractFactory = (await ethers.getContractFactory(name)).connect(signer);
+
+    let contract: Contract
+    contract = await upgrades.deployProxy(
+        contractFactory, 
+        contractConstructorArgs, 
+        {timeout: 0, initializer: initializerName}
+    );
+    await contract.deployed()
+    spinner.succeed(
+        `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
+    );
+
+    // Save artifacts
+    spinner.start(`Saving artifacts`);
+    const artifact = await hre.deployments.getExtendedArtifact(name);
+    const deploymentSubmission = {
+        address: contract.address,
+        ...artifact,
+    };
+    await hre.deployments.save(name, deploymentSubmission);
+
     spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
 
     return contract.address;
