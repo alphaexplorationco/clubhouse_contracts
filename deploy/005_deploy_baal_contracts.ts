@@ -28,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Deploy Baal summoner
     await deployContract(
         hre, 
-        "BaalSummoner", 
+        "BaalSummoner",
         baalSingletonAddress, 
         gnosisSafeSingletonAddress, 
         compatibilityFallbackHandler, 
@@ -40,4 +40,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     )   
 };
 export default func;
-func.tags = ['test'];
+func.tags = ['test', 'baal'];

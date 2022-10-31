@@ -4,8 +4,8 @@ import { deployContract } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const testNFTContractName = "TestERC721"
-  const trustedForwarderAddress = (await hre.deployments.get("MinimalForwarder")).address
+  const trustedForwarderAddress = (await hre.deployments.get("Forwarder")).address
   await deployContract(hre, testNFTContractName, trustedForwarderAddress)
 };
 export default func;
-func.tags = ['test', 'staging'];
+func.tags = ['test', 'staging', 'test_nft'];
