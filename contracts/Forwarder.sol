@@ -8,4 +8,3 @@ contract Forwarder is MinimalForwarderUpgradeable {
         __MinimalForwarder_init();
     }
 }
-

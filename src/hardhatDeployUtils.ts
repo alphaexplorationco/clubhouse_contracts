@@ -160,12 +160,12 @@ export async function deployContract(
     );
     const contractFactory = (await ethers.getContractFactory(name)).connect(signer);
 
-    let contract: Contract
+    let contract: Contract;
     contract = await contractFactory
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
-    await contract.deployed()
-    
+    await contract.deployed();
+
     spinner.succeed(
         `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
     );
@@ -219,13 +219,12 @@ export async function deployTransparentUpgradeableContract(
     );
     const contractFactory = (await ethers.getContractFactory(name)).connect(signer);
 
-    let contract: Contract
-    contract = await upgrades.deployProxy(
-        contractFactory, 
-        contractConstructorArgs, 
-        {timeout: 0, initializer: initializerName}
-    );
-    await contract.deployed()
+    let contract: Contract;
+    contract = await upgrades.deployProxy(contractFactory, contractConstructorArgs, {
+        timeout: 0,
+        initializer: initializerName,
+    });
+    await contract.deployed();
     spinner.succeed(
         `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
     );
