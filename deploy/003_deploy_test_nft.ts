@@ -8,4 +8,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployContract(hre, testNFTContractName, trustedForwarderAddress)
 };
 export default func;
-func.tags = ['hardhat', 'goerli', 'test_nft'];
+func.tags = ['hardhat', 'test_nft'];
