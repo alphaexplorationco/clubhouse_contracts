@@ -91,4 +91,13 @@ describe("Membership NFT Proxy Factory Contract", function () {
     const [newBalance] = await proxy1.functions.balanceOf(receiverAddress);
     expect(newBalance).to.equal(1);
   });
+
+  it("proxyWasCreatedByFactory should return true for existing proxy and false otherwise", async function () {
+    const [proxy1Exists] = await proxyFactory.functions.proxyWasCreatedByFactory(proxy1.address);
+    const [proxy2Exists] = await proxyFactory.functions.proxyWasCreatedByFactory(proxy2.address);
+    const [randomAddressExists] = await proxyFactory.functions.proxyWasCreatedByFactory("0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3");
+    expect(await proxy1Exists).to.equal(true);  
+    expect(await proxy2Exists).to.equal(true);
+    expect(await randomAddressExists).to.equal(false);
+  });
 });
