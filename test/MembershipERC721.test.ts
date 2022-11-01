@@ -80,11 +80,13 @@ describe("Membership NFT Contract", function () {
     await expect(proxyNonOwner.functions.setTrustedForwarder(addressWithBalance)).to.be.revertedWith("Ownable: caller is not the owner")
   });
 
-  it("_beforeTokenTransfer should revert on NFT transfer", async function () {
+  it("_beforeTokenTransfer should revert on NFT transfer except when burning", async function () {
     const [signer] = await ethers.getSigners()
     const receipt = await (await proxy.functions.safeMint(signer.address, 1123)).wait()
     const tokenId = await receipt.events[0].args.tokenId
     await expect(proxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).to.be.revertedWith("non transferable")
+    await (await proxy.functions.burn(tokenId)).wait()
+    expect((await proxy.functions.balanceOf(signer.address))[0]).to.equal(0)
   });
 
   it("tokenURI should return URI with expiry timestamp and display type as params", async function () {

@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
@@ -13,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 contract MembershipERC721 is
     Initializable,
     ERC721Upgradeable,
+    ERC721BurnableUpgradeable,
     OwnableUpgradeable,
     BaseRelayRecipient
 {
@@ -36,6 +38,7 @@ contract MembershipERC721 is
         address _trustedForwarder
     ) public initializer {
         __ERC721_init(_name, _symbol);
+        __ERC721Burnable_init();
         __Ownable_init();
         _setTrustedForwarder(_trustedForwarder);
     }
