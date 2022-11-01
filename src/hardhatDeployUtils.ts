@@ -11,6 +11,7 @@ import { AutotaskClient } from "defender-autotask-client";
 import path from "path";
 import fs from "fs";
 import os from "os";
+import { Provider } from "@ethersproject/providers";
 
 dotenv.config();
 
@@ -32,42 +33,90 @@ const GOERLI_DEFENDER_RELAY_API_SECRET =
 // These are used to programatically update the code for a particular autotask.
 const GOERLI_AUTOTASK_ID = process.env.GOERLI_AUTOTASK_ID || "";
 
-function getDefenderRelaySigner(apiKey: string, apiSecret: string): Signer {
+// Spinner for stdout logging
+const spinner = ora({
+    discardStdin: true,
+    spinner: "dots",
+});
+
+function getDefenderRelaySignerAndProvider(
+    apiKey: string,
+    apiSecret: string
+): [Signer, DefenderRelayProvider] {
     const credentials = { apiKey: apiKey, apiSecret: apiSecret };
     const provider = new DefenderRelayProvider(credentials);
     const relaySigner = new DefenderRelaySigner(credentials, provider, {
         speed: "fast",
     });
 
-    return relaySigner;
+    return [relaySigner, provider];
 }
 
-async function getSignerForNetwork(network: string): Promise<Signer> {
-    switch (network) {
+async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
+    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
+    spinner.start(`Creating ${signerType} signer`);
+    let signer: Signer;
+    let provider: Provider | DefenderRelayProvider;
+    switch (hre.network.name) {
         case "localhost":
         case "hardhat":
-            const signers = await ethers.getSigners();
-            return signers[0];
+            signer = (await ethers.getSigners())[0];
+            if (signer.provider === undefined) {
+                throw Error(`Cannot get provider for network ${hre.network.name}`);
+            }
+            provider = signer.provider;
+            break;
         case "goerli":
-            return getDefenderRelaySigner(
+            [signer, provider] = getDefenderRelaySignerAndProvider(
                 GOERLI_DEFENDER_RELAY_API_KEY,
                 GOERLI_DEFENDER_RELAY_API_SECRET
             );
+            break;
         default:
             throw Error(
-                `Cannot get Defender Relay signer for unrecognized network ${network}. Add network to hardhat.config.ts and API creds to this file and .env`
+                `Cannot get signer for unrecognized network ${hre.network.name}. 
+                 Add network to hardhat.config.ts and API creds to this file and .env if using OpenZeppelin Defender`
             );
     }
+
+    const signerChainId = await signer.getChainId();
+    const runtimeChainId = Number(await hre.getChainId());
+    // Swap out hardhat's default provider. This is so that the OpenZeppelin Hardhat Upgrades
+    // plugin works when deploying to Goerli etc. via a relay. Without this, the plugin attempts
+    // to fetch the default hre.network.provider.
+    // @ts-ignore
+    hre.network.provider = provider;
+    if (signerChainId != runtimeChainId) {
+        spinner.fail();
+        throw Error(
+            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
+        );
+    }
+    spinner.succeed(
+        `Created ${signerType} signer with address ${await signer.getAddress()}`
+    );
+    return signer;
+}
+
+async function saveDeployArtifact(
+    hre: HardhatRuntimeEnvironment,
+    name: string,
+    contract: Contract
+): Promise<void> {
+    spinner.start(`Saving artifact`);
+    const artifact = await hre.deployments.getExtendedArtifact(name);
+    const deploymentSubmission = {
+        address: contract.address,
+        ...artifact,
+    };
+    await hre.deployments.save(name, deploymentSubmission);
+
+    spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}/${name}.json`);
 }
 
 export async function updateDefenderAutotaskCodeForNetwork(
     hre: HardhatRuntimeEnvironment
 ): Promise<void> {
-    const spinner = ora({
-        discardStdin: false,
-        spinner: "dots",
-    });
-
     console.log(`Updating Defender Autotask code...`);
 
     spinner.start(`Creating Autotask client`);
@@ -86,12 +135,12 @@ export async function updateDefenderAutotaskCodeForNetwork(
     }
     spinner.succeed(`Created autotask client`);
 
-    spinner.start(`Fetching MinimalForwarder contract ABI and address`);
+    spinner.start(`Fetching Forwarder contract ABI and address`);
     // Create forwarder.json in tempdir with forwarder contract address and ABI
     const forwarderDeployment = hre.deployments.get("MinimalForwarder");
     const abi = (await forwarderDeployment).abi;
     const address = (await forwarderDeployment).address;
-    spinner.succeed(`Fetched MinimalForwarder contract ABI and address = ${address}`);
+    spinner.succeed(`Fetched Forwarder contract ABI and address = ${address}`);
 
     // Create temp dir
     spinner.start(`Writing forwarder contract data and code template to temporary dir`);
@@ -131,28 +180,10 @@ export async function deployContract(
     name: string,
     ...contractConstructorArgs: Array<any>
 ): Promise<string> {
-    const spinner = ora({
-        discardStdin: false,
-        spinner: "dots",
-    });
-
     console.log(`Starting deploy for contract ${name}.sol ...`);
 
     // Get signer for network
-    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
-    spinner.start(`Creating ${signerType} signer`);
-    const signer = await getSignerForNetwork(hre.network.name);
-    const signerChainId = await signer.getChainId();
-    const runtimeChainId = Number(await hre.getChainId());
-    if (signerChainId != runtimeChainId) {
-        spinner.fail();
-        throw Error(
-            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
-        );
-    }
-    spinner.succeed(
-        `Created ${signerType} signer with address ${await signer.getAddress()}`
-    );
+    const signer = await getSignerForNetwork(hre);
 
     // Deploy contract
     spinner.start(
@@ -171,15 +202,7 @@ export async function deployContract(
     );
 
     // Save artifacts
-    spinner.start(`Saving artifacts`);
-    const artifact = await hre.deployments.getExtendedArtifact(name);
-    const deploymentSubmission = {
-        address: contract.address,
-        ...artifact,
-    };
-    await hre.deployments.save(name, deploymentSubmission);
-
-    spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
+    await saveDeployArtifact(hre, name, contract);
 
     return contract.address;
 }
@@ -190,28 +213,10 @@ export async function deployTransparentUpgradeableContract(
     initializerName: string | false,
     ...contractConstructorArgs: Array<any>
 ): Promise<string> {
-    const spinner = ora({
-        discardStdin: false,
-        spinner: "dots",
-    });
-
     console.log(`Starting deploy for contract ${name}.sol ...`);
 
     // Get signer for network
-    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
-    spinner.start(`Creating ${signerType} signer`);
-    const signer = await getSignerForNetwork(hre.network.name);
-    const signerChainId = await signer.getChainId();
-    const runtimeChainId = Number(await hre.getChainId());
-    if (signerChainId != runtimeChainId) {
-        spinner.fail();
-        throw Error(
-            `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
-        );
-    }
-    spinner.succeed(
-        `Created ${signerType} signer with address ${await signer.getAddress()}`
-    );
+    const signer = await getSignerForNetwork(hre);
 
     // Deploy contract
     spinner.start(
@@ -230,15 +235,7 @@ export async function deployTransparentUpgradeableContract(
     );
 
     // Save artifacts
-    spinner.start(`Saving artifacts`);
-    const artifact = await hre.deployments.getExtendedArtifact(name);
-    const deploymentSubmission = {
-        address: contract.address,
-        ...artifact,
-    };
-    await hre.deployments.save(name, deploymentSubmission);
-
-    spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}`);
+    await saveDeployArtifact(hre, name, contract);
 
     return contract.address;
 }

@@ -8,4 +8,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployTransparentUpgradeableContract(hre, forwarderContractName, "initialize")
 };
 export default func;
-func.tags = ['test', 'staging', 'forwarder'];
+func.tags = ['hardhat', 'goerli', 'forwarder'];
