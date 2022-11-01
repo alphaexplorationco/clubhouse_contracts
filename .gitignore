@@ -17,3 +17,6 @@ deployments/localhost
 
 # Openzeppelin hardhat-upgrades plugin files for test networks
 .openzeppelin/unknown-*.json
+
+# Yarn error logs
+yarn-error.log
