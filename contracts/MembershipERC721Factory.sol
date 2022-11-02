@@ -15,6 +15,8 @@ contract MembershipERC721Factory {
 
     UpgradeableBeacon immutable beacon;
 
+    mapping(address => bool) private proxyRegistry;
+
     constructor(address _initBlueprint) {
         beacon = new UpgradeableBeacon(_initBlueprint);
         beacon.transferOwnership(tx.origin);
@@ -36,6 +38,7 @@ contract MembershipERC721Factory {
         );
         address proxyAddress = address(membershipProxy);
         MembershipERC721(proxyAddress).transferOwnership(tx.origin);
+        proxyRegistry[proxyAddress] = true;
 
         emit MembershipERC721ProxyCreated(proxyAddress, _name, _symbol);
     }
@@ -46,5 +49,13 @@ contract MembershipERC721Factory {
 
     function getImplementation() public view returns (address) {
         return beacon.implementation();
+    }
+
+    function proxyWasCreatedByFactory(address proxyAddress)
+        public
+        view
+        returns (bool)
+    {
+        return proxyRegistry[proxyAddress];
     }
 }
