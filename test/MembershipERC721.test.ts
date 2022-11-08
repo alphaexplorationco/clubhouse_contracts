@@ -6,6 +6,9 @@ describe("Membership NFT Contract", function () {
   let Membership: ContractFactory
   let membership: Contract
   let proxy: Contract
+  let Beacon: ContractFactory
+  let beacon: Contract
+  let BeaconProxy: ContractFactory
   let forwarderAddress: string
   let addressWithBalance: string
   let addressWithBalanceTokenId: Number
@@ -13,9 +16,9 @@ describe("Membership NFT Contract", function () {
   this.beforeAll(async () => {
     Membership = await ethers.getContractFactory("MembershipERC721");
     membership = await Membership.deploy();
-    const Beacon = await ethers.getContractFactory("UpgradeableBeacon")
-    const beacon = await Beacon.deploy(membership.address);
-    const BeaconProxy = await ethers.getContractFactory("BeaconProxy");
+    Beacon = await ethers.getContractFactory("UpgradeableBeacon")
+    beacon = await Beacon.deploy(membership.address);
+    BeaconProxy = await ethers.getContractFactory("BeaconProxy");
     const beaconProxy = await BeaconProxy.deploy(
       beacon.address,
       Membership.interface.encodeFunctionData("setUp", ["TEST", "T", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
@@ -34,6 +37,17 @@ describe("Membership NFT Contract", function () {
   });
 
   it("setUp should set name, symbol, trusted forwarder, and display type correctly", async function () {
+    await expect(BeaconProxy.deploy(
+      beacon.address,
+      Membership.interface.encodeFunctionData("setUp", ["", "T", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
+    )).to.be.revertedWith("_name or _symbol empty");
+    await expect(BeaconProxy.deploy(
+      beacon.address,
+      Membership.interface.encodeFunctionData("setUp", ["TEST", "", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
+    )).to.be.revertedWith("_name or _symbol empty");
+  });
+
+  it("setUp should set revert if name or symbol is empty", async function () {
     expect((await proxy.functions.name())[0]).to.equal("TEST")
     expect((await proxy.functions.symbol())[0]).to.equal("T")
     expect((await proxy.functions.trustedForwarder())[0]).to.equal(forwarderAddress)
