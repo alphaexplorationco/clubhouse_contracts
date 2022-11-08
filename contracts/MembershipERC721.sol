@@ -40,6 +40,7 @@ contract MembershipERC721 is
         string memory _symbol,
         address _trustedForwarder
     ) public initializer {
+        require(bytes(_name).length != 0 && bytes(_symbol).length != 0, "_name or _symbol empty");
         __ERC721_init(_name, _symbol);
         __ERC721Burnable_init();
         __Ownable_init();
