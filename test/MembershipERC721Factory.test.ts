@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 
 describe("Membership NFT Proxy Factory Contract", function () {
   let Implementation: ContractFactory
+  let ProxyFactory: ContractFactory
   let proxyFactory: Contract
   let implementation: Contract
   let forwarder: Contract
@@ -17,7 +18,7 @@ describe("Membership NFT Proxy Factory Contract", function () {
     forwarder = await Forwarder.deploy();
     Implementation = await ethers.getContractFactory("MembershipERC721");
     implementation = await Implementation.deploy();
-    const ProxyFactory = await ethers.getContractFactory("MembershipERC721Factory");
+    ProxyFactory = await ethers.getContractFactory("MembershipERC721Factory");
     proxyFactory = await ProxyFactory.deploy(implementation.address);
     const beaconAddress = (await proxyFactory.functions.getBeacon())[0];
     const Beacon = await ethers.getContractFactory("UpgradeableBeacon");
@@ -65,6 +66,13 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(proxyForwarderAddress).to.equal(forwarder.address);
   });
 
+  it("buildMembershipERC721Proxy should not be callable by non-owner", async function () {
+    const nonOwnerSigner = (await ethers.getSigners())[5];
+    await expect(
+        proxyFactory.connect(nonOwnerSigner).functions.buildMembershipERC721Proxy("TEST3", "T3", forwarder.address)
+    ).to.be.revertedWith("Ownable: caller is not the owner");
+  });
+
   it("getBeacon should return beacon address", async function () {
    expect((await proxyFactory.functions.getBeacon())[0]).to.equal(beacon.address);
   });
@@ -99,5 +107,9 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(await proxy1Exists).to.equal(true);  
     expect(await proxy2Exists).to.equal(true);
     expect(await randomAddressExists).to.equal(false);
+  });
+
+  it("renounceOwnership should revert", async function() {
+    await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
   });
 });
