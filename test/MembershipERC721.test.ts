@@ -110,4 +110,8 @@ describe("Membership NFT Contract", function () {
     expect(data.name).to.equal(name)
     expect(data.image).to.equal(`https://clubhouse.com/nft/${proxy.address.toLowerCase()}_${addressWithBalanceTokenId}.png`)
   });
+
+  it("renounceOwnership should revert", async function (){
+    await expect(proxy.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
+  });
 });

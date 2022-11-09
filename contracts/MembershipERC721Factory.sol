@@ -2,7 +2,8 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
-import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./UpgradeableBeacon.sol";
 
 import "./MembershipERC721.sol";
 
