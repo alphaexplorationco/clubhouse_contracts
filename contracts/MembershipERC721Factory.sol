@@ -8,7 +8,6 @@ import "./UpgradeableBeacon.sol";
 import "./MembershipERC721.sol";
 
 contract MembershipERC721Factory is Ownable {
-
     /* Errors */
     error RenounceOwnershipError();
 
@@ -65,7 +64,7 @@ contract MembershipERC721Factory is Ownable {
         return proxyRegistry[proxyAddress];
     }
 
-    function renounceOwnership() public view onlyOwner override(Ownable) {
+    function renounceOwnership() public view override(Ownable) onlyOwner {
         revert RenounceOwnershipError();
     }
 }
