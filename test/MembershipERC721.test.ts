@@ -58,6 +58,11 @@ describe("Membership NFT Contract", function () {
     expect((await proxy.functions.balanceOf(forwarderAddress))[0]).to.equal(1)
   });
 
+  it("safeMint should emit event", async function () {
+    await expect(proxy.functions.safeMint("0xCfdC2419f4CC439A064d9A5334cbEF203b135921", 1)).to.emit(
+      proxy, "TokenMinted").withArgs(2, "0xCfdC2419f4CC439A064d9A5334cbEF203b135921", 1);
+  });
+
   it("safeMint should revert on mint to address with balance > 0", async function () {
     await expect(proxy.functions.safeMint(addressWithBalance, 1)).to.be.revertedWith("balanceOf(to) > 0")
   });
@@ -76,6 +81,11 @@ describe("Membership NFT Contract", function () {
     expect((await proxy.functions.getExpiryTimestamp(addressWithBalanceTokenId))[0]).to.equal(23)
   });
 
+  it("updateExpiryTimestamp and getExpiryTimestamp should emit event", async function () {
+    await expect(proxy.functions.updateExpiryTimestamp(addressWithBalanceTokenId, 2300)).to.emit(
+      proxy, "ExpiryTimestampUpdated").withArgs(addressWithBalanceTokenId, 2300)
+  });
+
   it("updateExpiryTimestamp should revert if called by non-owner address", async function () {
     const [_, nonOwnerSigner] = (await ethers.getSigners())
     const proxyNonOwner = proxy.connect(nonOwnerSigner)
@@ -86,6 +96,11 @@ describe("Membership NFT Contract", function () {
     expect((await proxy.functions.trustedForwarder())[0]).to.equal(forwarderAddress)
     await (await proxy.functions.setTrustedForwarder(addressWithBalance)).wait()
     expect((await proxy.functions.trustedForwarder())[0]).to.equal(addressWithBalance)
+  });
+
+  it("setTrustedForwarder should emit event", async function () {
+    await expect(proxy.functions.setTrustedForwarder(addressWithBalance)).to.emit(
+      proxy, "TrustedForwarderUpdated").withArgs(addressWithBalance);
   });
 
   it("setTrustedForwarder should revert if called by non-owner address", async function () {

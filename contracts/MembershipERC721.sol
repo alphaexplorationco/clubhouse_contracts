@@ -31,6 +31,11 @@ contract MembershipERC721 is
     // Switch for token transferability
     bool transferable;
 
+    /* Events */
+    event ExpiryTimestampUpdated(uint256 tokenId, uint256 expiryTimestamp);
+    event TrustedForwarderUpdated(address trustedForwarderAddress);
+    event TokenMinted(uint256 tokenId, address to, uint256 expiryTimestamp);
+
     constructor() {
         _disableInitializers();
     }
@@ -64,6 +69,7 @@ contract MembershipERC721 is
         _safeMint(to, tokenId);
         tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
         _tokenIdCounter.increment();
+        emit TokenMinted(tokenId, to, expiryTimestamp);
     }
 
     /// @notice Updates the expiry timestamp for a given address
@@ -72,6 +78,7 @@ contract MembershipERC721 is
         onlyOwner
     {
         tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
+        emit ExpiryTimestampUpdated(tokenId, updatedTimestamp);
     }
 
     /// @notice Gets the expiry timestamp for a given address
@@ -82,6 +89,7 @@ contract MembershipERC721 is
     /// @notice Sets the trusted forwarder for meta-transactions (EIP-2771)
     function setTrustedForwarder(address _newTrustedFowarder) public onlyOwner {
         _setTrustedForwarder(_newTrustedFowarder);
+        emit TrustedForwarderUpdated(_newTrustedFowarder);
     }
 
     /// @notice Generates the token URI for a particular token ID
