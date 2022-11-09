@@ -22,9 +22,6 @@ contract MembershipERC721 is
 
     CountersUpgradeable.Counter private _tokenIdCounter;
 
-    /* Errors */
-    error RenounceOwnershipError();
-
     /* Version recipient for OpenGSN */
     string public override versionRecipient = "2.2.5";
 
@@ -118,16 +115,6 @@ contract MembershipERC721 is
                     )
                 )
             );
-    }
-
-    /// @notice
-    function renounceOwnership()
-        public
-        view
-        override(OwnableUpgradeable)
-        onlyOwner
-    {
-        revert RenounceOwnershipError();
     }
 
     /// @notice Pre-transfer hook that locks token transfers for this contract
