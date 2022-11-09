@@ -19,12 +19,12 @@ describe("Membership NFT Contract", function () {
     Beacon = await ethers.getContractFactory("UpgradeableBeacon")
     beacon = await Beacon.deploy(membership.address);
     BeaconProxy = await ethers.getContractFactory("BeaconProxy");
+    forwarderAddress = "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"
     const beaconProxy = await BeaconProxy.deploy(
       beacon.address,
-      Membership.interface.encodeFunctionData("setUp", ["TEST", "T", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
+      Membership.interface.encodeFunctionData("setUp", ["TEST", "T", forwarderAddress])
     );
     proxy = Membership.attach(beaconProxy.address)
-    forwarderAddress = "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"
     addressWithBalance = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
     const mintReceipt = await (await proxy.functions.safeMint(addressWithBalance, 1)).wait()
     addressWithBalanceTokenId = await mintReceipt.events[0].args.tokenId
@@ -114,4 +114,29 @@ describe("Membership NFT Contract", function () {
   it("renounceOwnership should revert", async function (){
     await expect(proxy.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
   });
+
+  it("setTransferability should make token transferable when set to true", async function (){ 
+    // Create new proxy
+    const newBeaconProxy = await BeaconProxy.deploy(
+      beacon.address,
+      Membership.interface.encodeFunctionData("setUp", ["TEST", "T", forwarderAddress])
+    );
+    const newProxy = Membership.attach(newBeaconProxy.address)
+    expect((await newProxy.functions.isTransferable())[0]).to.equal(false);
+
+    // Transfer attempt should revert
+    const [signer] = await ethers.getSigners()
+    const receipt = await (await newProxy.functions.safeMint(signer.address, 1123)).wait()
+    const tokenId = await receipt.events[0].args.tokenId
+    await expect(newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).to.be.revertedWith("non transferable")
+
+    // Set transferability
+    await (await newProxy.functions.setTransferability(true)).wait();
+    expect((await newProxy.functions.isTransferable())[0]).to.equal(true);
+
+    // Transfer attempt should pass
+    expect((await newProxy.functions.balanceOf(signer.address))[0]).to.equal(1);
+    await (await newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).wait();
+    expect((await newProxy.functions.balanceOf(signer.address))[0]).to.equal(0);
+  })
 });
