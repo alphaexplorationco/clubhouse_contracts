@@ -31,6 +31,11 @@ contract MembershipERC721 is
     // Switch for token transferability
     bool transferable;
 
+    /* Events */
+    event ExpiryTimestampUpdated(uint256 tokenId, uint256 expiryTimestamp);
+    event TrustedForwarderUpdated(address trustedForwarderAddress);
+    event TokenMinted(uint256 tokenId, address to, uint256 expiryTimestamp);
+
     constructor() {
         _disableInitializers();
     }
