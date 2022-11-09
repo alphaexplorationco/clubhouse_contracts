@@ -117,16 +117,6 @@ contract MembershipERC721 is
             );
     }
 
-    /// @notice
-    function renounceOwnership()
-        public
-        view
-        override(OwnableUpgradeable)
-        onlyOwner
-    {
-        revert("Cannot renounce ownership");
-    }
-
     /// @notice Pre-transfer hook that locks token transfers for this contract
     function _beforeTokenTransfer(
         address from,
