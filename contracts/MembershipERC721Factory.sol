@@ -2,16 +2,11 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./UpgradeableBeacon.sol";
 
 import "./MembershipERC721.sol";
 
-contract MembershipERC721Factory is Ownable {
-    /* Errors */
-    error RenounceOwnershipError();
-
-    /* Events */
+contract MembershipERC721Factory {
     event MembershipERC721ProxyCreated(
         address proxyAddress,
         string name,
@@ -31,7 +26,7 @@ contract MembershipERC721Factory is Ownable {
         string memory _name,
         string memory _symbol,
         address _trustedForwarder
-    ) public onlyOwner {
+    ) public {
         BeaconProxy membershipProxy = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
@@ -62,9 +57,5 @@ contract MembershipERC721Factory is Ownable {
         returns (bool)
     {
         return proxyRegistry[proxyAddress];
-    }
-
-    function renounceOwnership() public view override(Ownable) onlyOwner {
-        revert RenounceOwnershipError();
     }
 }
