@@ -28,6 +28,9 @@ contract MembershipERC721 is
     // Mapping from tokenId to membership expiry timestamp
     mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
 
+    // Switch for token transferability
+    bool transferable;
+
     constructor() {
         _disableInitializers();
     }
@@ -45,6 +48,7 @@ contract MembershipERC721 is
         __ERC721Burnable_init();
         __Ownable_init();
         _setTrustedForwarder(_trustedForwarder);
+        transferable = false;
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -133,8 +137,18 @@ contract MembershipERC721 is
         address to,
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable) {
-        require(from == address(0) || to == address(0), "non transferable");
+        require(from == address(0) || to == address(0) || transferable, "non transferable");
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    /// @notice Make token transferable / non-transferable
+    function setTransferability(bool transferability) public onlyOwner {
+        transferable = transferability;
+    }
+
+    /// @notice Get transferability of token
+    function isTransferable() public view returns(bool) {
+        return transferable;
     }
 
     /// @notice Provides access to message sender of a meta transaction (EIP-2771)
