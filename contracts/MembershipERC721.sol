@@ -40,7 +40,10 @@ contract MembershipERC721 is
         string memory _symbol,
         address _trustedForwarder
     ) public initializer {
-        require(bytes(_name).length != 0 && bytes(_symbol).length != 0, "_name or _symbol empty");
+        require(
+            bytes(_name).length != 0 && bytes(_symbol).length != 0,
+            "_name or _symbol empty"
+        );
         __ERC721_init(_name, _symbol);
         __ERC721Burnable_init();
         __Ownable_init();
@@ -118,7 +121,12 @@ contract MembershipERC721 is
     }
 
     /// @notice
-    function renounceOwnership() public view onlyOwner override(OwnableUpgradeable) {
+    function renounceOwnership()
+        public
+        view
+        override(OwnableUpgradeable)
+        onlyOwner
+    {
         revert RenounceOwnershipError();
     }
 
