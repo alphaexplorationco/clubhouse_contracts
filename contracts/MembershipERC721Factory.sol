@@ -13,7 +13,7 @@ contract MembershipERC721Factory {
         string symbol
     );
 
-    UpgradeableBeacon immutable beacon;
+    UpgradeableBeacon private immutable beacon;
 
     mapping(address => bool) private proxyRegistry;
 
