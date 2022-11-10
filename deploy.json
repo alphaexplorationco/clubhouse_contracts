@@ -7887,6 +7887,25 @@
               "inputs": [
                 {
                   "indexed": false,
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "expiryTimestamp",
+                  "type": "uint256"
+                }
+              ],
+              "name": "ExpiryTimestampUpdated",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
                   "internalType": "uint8",
                   "name": "version",
                   "type": "uint8"
@@ -7918,6 +7937,31 @@
               "anonymous": false,
               "inputs": [
                 {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "to",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint256",
+                  "name": "expiryTimestamp",
+                  "type": "uint256"
+                }
+              ],
+              "name": "TokenMinted",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
                   "indexed": true,
                   "internalType": "address",
                   "name": "from",
@@ -7937,6 +7981,19 @@
                 }
               ],
               "name": "Transfer",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "trustedForwarderAddress",
+                  "type": "address"
+                }
+              ],
+              "name": "TrustedForwarderUpdated",
               "type": "event"
             },
             {
@@ -8052,6 +8109,19 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "isTransferable",
+              "outputs": [
+                {
+                  "internalType": "bool",
+                  "name": "",
+                  "type": "bool"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -8119,7 +8189,7 @@
               "inputs": [],
               "name": "renounceOwnership",
               "outputs": [],
-              "stateMutability": "nonpayable",
+              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -8205,6 +8275,19 @@
                 }
               ],
               "name": "setApprovalForAll",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bool",
+                  "name": "transferability",
+                  "type": "bool"
+                }
+              ],
+              "name": "setTransferability",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -8418,6 +8501,25 @@
               "type": "event"
             },
             {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "previousOwner",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "OwnershipTransferred",
+              "type": "event"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "string",
@@ -8467,6 +8569,19 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "owner",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -8484,24 +8599,100 @@
               ],
               "stateMutability": "view",
               "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "renounceOwnership",
+              "outputs": [],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
             }
           ]
         },
         "Forwarder": {
-          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+          "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
           "abi": [
+            {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
             {
               "anonymous": false,
               "inputs": [
                 {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "domainSeparator",
+                  "type": "bytes32"
+                },
+                {
                   "indexed": false,
-                  "internalType": "uint8",
-                  "name": "version",
-                  "type": "uint8"
+                  "internalType": "bytes",
+                  "name": "domainValue",
+                  "type": "bytes"
                 }
               ],
-              "name": "Initialized",
+              "name": "DomainRegistered",
               "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "typeHash",
+                  "type": "bytes32"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "typeStr",
+                  "type": "string"
+                }
+              ],
+              "name": "RequestTypeRegistered",
+              "type": "event"
+            },
+            {
+              "inputs": [],
+              "name": "EIP712_DOMAIN_TYPE",
+              "outputs": [
+                {
+                  "internalType": "string",
+                  "name": "",
+                  "type": "string"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "GENERIC_PARAMS",
+              "outputs": [
+                {
+                  "internalType": "string",
+                  "name": "",
+                  "type": "string"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
             },
             {
               "inputs": [
@@ -8536,15 +8727,120 @@
                       "internalType": "bytes",
                       "name": "data",
                       "type": "bytes"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "validUntil",
+                      "type": "uint256"
                     }
                   ],
-                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
+                  "internalType": "struct IForwarder.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
                 {
+                  "internalType": "bytes32",
+                  "name": "requestTypeHash",
+                  "type": "bytes32"
+                },
+                {
                   "internalType": "bytes",
-                  "name": "signature",
+                  "name": "suffixData",
+                  "type": "bytes"
+                }
+              ],
+              "name": "_getEncoded",
+              "outputs": [
+                {
+                  "internalType": "bytes",
+                  "name": "",
+                  "type": "bytes"
+                }
+              ],
+              "stateMutability": "pure",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "name": "domains",
+              "outputs": [
+                {
+                  "internalType": "bool",
+                  "name": "",
+                  "type": "bool"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "from",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "to",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "gas",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "nonce",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "validUntil",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IForwarder.ForwardRequest",
+                  "name": "req",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "domainSeparator",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "requestTypeHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "suffixData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "sig",
                   "type": "bytes"
                 }
               ],
@@ -8552,12 +8848,12 @@
               "outputs": [
                 {
                   "internalType": "bool",
-                  "name": "",
+                  "name": "success",
                   "type": "bool"
                 },
                 {
                   "internalType": "bytes",
-                  "name": "",
+                  "name": "ret",
                   "type": "bytes"
                 }
               ],
@@ -8584,10 +8880,58 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "initialize",
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "version",
+                  "type": "string"
+                }
+              ],
+              "name": "registerDomainSeparator",
               "outputs": [],
               "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "typeName",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "typeSuffix",
+                  "type": "string"
+                }
+              ],
+              "name": "registerRequestType",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "name": "typeHashes",
+              "outputs": [
+                {
+                  "internalType": "bool",
+                  "name": "",
+                  "type": "bool"
+                }
+              ],
+              "stateMutability": "view",
               "type": "function"
             },
             {
@@ -8623,33 +8967,51 @@
                       "internalType": "bytes",
                       "name": "data",
                       "type": "bytes"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "validUntil",
+                      "type": "uint256"
                     }
                   ],
-                  "internalType": "struct MinimalForwarderUpgradeable.ForwardRequest",
+                  "internalType": "struct IForwarder.ForwardRequest",
                   "name": "req",
                   "type": "tuple"
                 },
                 {
+                  "internalType": "bytes32",
+                  "name": "domainSeparator",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "requestTypeHash",
+                  "type": "bytes32"
+                },
+                {
                   "internalType": "bytes",
-                  "name": "signature",
+                  "name": "suffixData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "sig",
                   "type": "bytes"
                 }
               ],
               "name": "verify",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
+              "outputs": [],
               "stateMutability": "view",
               "type": "function"
+            },
+            {
+              "stateMutability": "payable",
+              "type": "receive"
             }
           ]
         },
         "TestERC721": {
-          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
           "abi": [
             {
               "inputs": [
@@ -9105,7 +9467,7 @@
           ]
         },
         "Baal": {
-          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
           "abi": [
             {
               "inputs": [],
@@ -10659,7 +11021,7 @@
           ]
         },
         "GnosisSafe": {
-          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
           "abi": [
             {
               "inputs": [],
@@ -11695,7 +12057,7 @@
           ]
         },
         "GnosisSafeProxyFactory": {
-          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
           "abi": [
             {
               "anonymous": false,
@@ -11861,7 +12223,7 @@
           ]
         },
         "ModuleProxyFactory": {
-          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+          "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
           "abi": [
             {
               "inputs": [],
@@ -11941,7 +12303,7 @@
           ]
         },
         "CompatibilityFallbackHandler": {
-          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+          "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
           "abi": [
             {
               "inputs": [],
@@ -12269,7 +12631,7 @@
           ]
         },
         "MultiSend": {
-          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+          "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
           "abi": [
             {
               "inputs": [],
@@ -12292,7 +12654,7 @@
           ]
         },
         "Loot": {
-          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
           "abi": [
             {
               "inputs": [],
@@ -12971,7 +13333,7 @@
           ]
         },
         "Shares": {
-          "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
+          "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
           "abi": [
             {
               "inputs": [],
@@ -13834,7 +14196,7 @@
           ]
         },
         "BaalSummoner": {
-          "address": "0x9A676e781A523b5d0C0e43731313A708CB607508",
+          "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
           "abi": [
             {
               "inputs": [
