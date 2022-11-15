@@ -56,7 +56,6 @@ contract MembershipERC721 is
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        // TODO(akshaan): Replace with true URL once the image rendering service / endpoint is set up
         return "https://clubhouse.com/nft/";
     }
 
