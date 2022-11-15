@@ -1,3 +1,4 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
 import { ethers } from "hardhat";
@@ -12,14 +13,16 @@ describe("Membership NFT Proxy Factory Contract", function () {
   let proxy2: Contract
   let beacon: Contract
   let upgradedImplementation: Contract
+  let beaconOwner: SignerWithAddress
 
   this.beforeAll(async () => {
+    beaconOwner = (await ethers.getSigners())[5];
     const Forwarder = await ethers.getContractFactory("MinimalForwarder");
     forwarder = await Forwarder.deploy();
     Implementation = await ethers.getContractFactory("MembershipERC721");
     implementation = await Implementation.deploy();
     ProxyFactory = await ethers.getContractFactory("MembershipERC721Factory");
-    proxyFactory = await ProxyFactory.deploy(implementation.address);
+    proxyFactory = await ProxyFactory.deploy(implementation.address, beaconOwner.address);
     const beaconAddress = (await proxyFactory.functions.getBeacon())[0];
     const Beacon = await ethers.getContractFactory("UpgradeableBeacon");
     beacon = Beacon.attach(beaconAddress);
@@ -45,11 +48,10 @@ describe("Membership NFT Proxy Factory Contract", function () {
 
   });
 
-  it("constructor should init beacon with caller as owner", async function () {
-    const [expectedOwner] = (await ethers.getSigners());
+  it("constructor should init beacon with correct owner", async function () {
     const [beaconOwnerAddress] = await beacon.functions.owner();
     const [beaconImplementationAddress] = await beacon.functions.implementation();
-    expect(beaconOwnerAddress).to.equal(expectedOwner.address);
+    expect(beaconOwnerAddress).to.equal(beaconOwner.address);
     expect(beaconImplementationAddress).to.equal(implementation.address);
   });
 
@@ -89,7 +91,7 @@ describe("Membership NFT Proxy Factory Contract", function () {
     await expect(proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)).to.be.revertedWith("non transferable");
 
     // Upgrade
-    const upgradeTx = await beacon.functions.upgradeTo(upgradedImplementation.address);
+    const upgradeTx = await beacon.connect(beaconOwner).functions.upgradeTo(upgradedImplementation.address);
     await upgradeTx.wait();
 
     // After upgrade, tokens should be transferable

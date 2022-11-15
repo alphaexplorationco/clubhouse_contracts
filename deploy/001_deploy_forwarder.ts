@@ -1,11 +1,10 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployTransparentUpgradeableContract } from '../src/hardhatDeployUtils';
-import { upgrades } from 'hardhat';
+import { deployContract } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const forwarderContractName = "Forwarder" 
-  await deployTransparentUpgradeableContract(hre, forwarderContractName, "initialize")
+  await deployContract(hre, forwarderContractName)
 };
 export default func;
 func.tags = ['hardhat', 'goerli', 'forwarder'];
