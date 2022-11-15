@@ -60,7 +60,7 @@ contract MembershipERC721 is
     }
 
     /// @notice Mints an ERC-721 token to the address `to` with a subscription
-    /// expiry timestsamp of `expiryTimestamp`
+    /// expiry timestamp of `expiryTimestamp`
     function safeMint(address to, uint256 expiryTimestamp) external onlyOwner {
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         uint256 tokenId = _tokenIdCounter.current();
