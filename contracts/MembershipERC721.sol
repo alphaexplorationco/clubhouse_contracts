@@ -62,7 +62,8 @@ contract MembershipERC721 is
     }
 
     /// @notice Mints an ERC-721 token to the address `to` with a subscription
-    /// expiry timestsamp of `expiryTimestamp`
+    /// expiry timestsamp of `expiryTimestamp`. This function can only be called
+    /// by the contract owner.
     function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         uint256 tokenId = _tokenIdCounter.current();
@@ -72,7 +73,8 @@ contract MembershipERC721 is
         emit TokenMinted(tokenId, to, expiryTimestamp);
     }
 
-    /// @notice Updates the expiry timestamp for a given address
+    /// @notice Updates the expiry timestamp for a given address. This function
+    /// can only be called by the contract owner.
     function updateExpiryTimestamp(uint256 tokenId, uint256 updatedTimestamp)
         public
         onlyOwner
@@ -87,6 +89,7 @@ contract MembershipERC721 is
     }
 
     /// @notice Sets the trusted forwarder for meta-transactions (EIP-2771)
+    /// This function can only be called by the contract owner.
     function setTrustedForwarder(address _newTrustedFowarder) public onlyOwner {
         _setTrustedForwarder(_newTrustedFowarder);
         emit TrustedForwarderUpdated(_newTrustedFowarder);
