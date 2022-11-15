@@ -39,6 +39,7 @@ contract MembershipERC721 is
         _disableInitializers();
     }
 
+    /// @notice Initializer for contract. Sets token name, symbol and trusted forwarder (ERC-2771)
     function setUp(
         string memory _name,
         string memory _symbol,
@@ -127,7 +128,7 @@ contract MembershipERC721 is
             );
     }
 
-    /// @notice
+    /// @notice Renounce ownership of contract instance. Always reverts.
     function renounceOwnership()
         public
         view
