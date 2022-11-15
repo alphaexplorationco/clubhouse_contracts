@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -23,7 +22,7 @@ contract MembershipERC721 is
     CountersUpgradeable.Counter private _tokenIdCounter;
 
     /* Version recipient for OpenGSN */
-    string public override versionRecipient = "2.2.5";
+    string public constant override versionRecipient = "2.2.5";
 
     // Mapping from tokenId to membership expiry timestamp
     mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
@@ -63,7 +62,7 @@ contract MembershipERC721 is
 
     /// @notice Mints an ERC-721 token to the address `to` with a subscription
     /// expiry timestsamp of `expiryTimestamp`
-    function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
+    function safeMint(address to, uint256 expiryTimestamp) external onlyOwner {
         require(balanceOf(to) == 0, "balanceOf(to) > 0");
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
@@ -74,7 +73,7 @@ contract MembershipERC721 is
 
     /// @notice Updates the expiry timestamp for a given address
     function updateExpiryTimestamp(uint256 tokenId, uint256 updatedTimestamp)
-        public
+        external
         onlyOwner
     {
         tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
@@ -87,7 +86,7 @@ contract MembershipERC721 is
     }
 
     /// @notice Sets the trusted forwarder for meta-transactions (EIP-2771)
-    function setTrustedForwarder(address _newTrustedFowarder) public onlyOwner {
+    function setTrustedForwarder(address _newTrustedFowarder) external onlyOwner {
         _setTrustedForwarder(_newTrustedFowarder);
         emit TrustedForwarderUpdated(_newTrustedFowarder);
     }

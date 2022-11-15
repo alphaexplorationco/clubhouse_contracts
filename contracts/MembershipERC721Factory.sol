@@ -29,7 +29,7 @@ contract MembershipERC721Factory is Ownable {
         string memory _name,
         string memory _symbol,
         address _trustedForwarder
-    ) public onlyOwner {
+    ) external onlyOwner {
         BeaconProxy membershipProxy = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
