@@ -20,9 +20,9 @@ contract MembershipERC721Factory is Ownable {
 
     mapping(address => bool) private proxyRegistry;
 
-    constructor(address _initBlueprint) {
+    constructor(address _initBlueprint, address beaconOwner) {
         beacon = new UpgradeableBeacon(_initBlueprint);
-        beacon.transferOwnership(tx.origin);
+        beacon.transferOwnership(beaconOwner);
     }
 
     function buildMembershipERC721Proxy(
@@ -40,7 +40,7 @@ contract MembershipERC721Factory is Ownable {
             )
         );
         address proxyAddress = address(membershipProxy);
-        MembershipERC721(proxyAddress).transferOwnership(tx.origin);
+        MembershipERC721(proxyAddress).transferOwnership(_msgSender());
         proxyRegistry[proxyAddress] = true;
 
         emit MembershipERC721ProxyCreated(proxyAddress, _name, _symbol);
