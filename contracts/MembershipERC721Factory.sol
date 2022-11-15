@@ -16,13 +16,14 @@ contract MembershipERC721Factory is Ownable {
         string symbol
     );
 
-    UpgradeableBeacon private immutable beacon;
+    address private immutable beaconAddress;
 
     mapping(address => bool) private proxyRegistry;
 
     constructor(address _initBlueprint, address beaconOwner) {
-        beacon = new UpgradeableBeacon(_initBlueprint);
+        UpgradeableBeacon beacon = new UpgradeableBeacon(_initBlueprint);
         beacon.transferOwnership(beaconOwner);
+        beaconAddress = address(beacon);
     }
 
     function buildMembershipERC721Proxy(
@@ -31,7 +32,7 @@ contract MembershipERC721Factory is Ownable {
         address _trustedForwarder
     ) public onlyOwner {
         BeaconProxy membershipProxy = new BeaconProxy(
-            address(beacon),
+            beaconAddress,
             abi.encodeWithSelector(
                 MembershipERC721(address(0)).setUp.selector,
                 _name,
@@ -47,11 +48,11 @@ contract MembershipERC721Factory is Ownable {
     }
 
     function getBeacon() public view returns (address) {
-        return address(beacon);
+        return beaconAddress;
     }
 
     function getImplementation() public view returns (address) {
-        return beacon.implementation();
+        return UpgradeableBeacon(beaconAddress).implementation();
     }
 
     function proxyWasCreatedByFactory(address proxyAddress)
