@@ -123,5 +123,6 @@ describe("Membership NFT Proxy Factory Contract", function () {
   it("renounceOwnership should revert", async function() {
     const [owner] = await proxyFactory.functions.owner()
     await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWithCustomError(proxyFactory, "RenounceOwnership").withArgs(owner);
+    await expect(proxyFactory.connect("0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3").functions.renounceOwnership()).to.be.revertedWith("Ownable: caller is not the owner");
   });
 });

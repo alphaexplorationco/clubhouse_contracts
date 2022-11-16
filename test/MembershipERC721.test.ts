@@ -135,6 +135,9 @@ describe("Membership NFT Contract", function () {
     await expect(
       proxy.functions.renounceOwnership()
       ).to.be.revertedWithCustomError(proxy, "RenounceOwnership").withArgs(owner);
+    await expect(
+      proxy.connect("0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3").functions.renounceOwnership()
+      ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   it("setTransferability should make token transferable when set to true", async function (){ 
@@ -163,4 +166,11 @@ describe("Membership NFT Contract", function () {
     await (await newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).wait();
     expect((await newProxy.functions.balanceOf(signer.address))[0]).to.equal(0);
   })
+
+  it("setTransferability should rever when called by non-owner", async function (){
+    const nonOwner = (await ethers.getSigners())[4]
+    await expect(
+      proxy.connect(nonOwner).functions.setTransferability(true)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+  });
 });
