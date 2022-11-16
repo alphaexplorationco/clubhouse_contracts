@@ -16,6 +16,11 @@ contract MembershipERC721Factory is Ownable {
         string symbol
     );
 
+    /* Errors */
+    /// Renounce ownership error
+    /// @param owner owner address
+    error RenounceOwnership(address owner);
+
     address private immutable beaconAddress;
 
     // Mapping from proxy address to bool. Used to prove that a proxy was 
@@ -71,6 +76,6 @@ contract MembershipERC721Factory is Ownable {
 
     /// @notice Overrides the renounceOwnership function from Ownable. Always reverts.
     function renounceOwnership() public view override(Ownable) onlyOwner {
-        revert("Cannot renounce ownership");
+        revert RenounceOwnership(owner());
     }
 }

@@ -131,7 +131,10 @@ describe("Membership NFT Contract", function () {
   });
 
   it("renounceOwnership should revert", async function (){
-    await expect(proxy.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
+    const [owner] = await proxy.functions.owner()
+    await expect(
+      proxy.functions.renounceOwnership()
+      ).to.be.revertedWithCustomError(proxy, "RenounceOwnership").withArgs(owner);
   });
 
   it("setTransferability should make token transferable when set to true", async function (){ 

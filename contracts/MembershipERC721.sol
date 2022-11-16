@@ -44,10 +44,13 @@ contract MembershipERC721 is
     /// @param from sender address
     /// @param to recipient address
     error NonTransferable(address from, address to);
-    /// Attemp to mint token to address with balance > 0
+    /// Attempt to mint token to address with balance > 0
     /// @param from minter address
     /// @param to recipient address with balance > 0
     error MintToAddressWithToken(address from, address to);
+    /// Renounce ownership error
+    /// @param owner owner address
+    error RenounceOwnership(address owner);
 
     constructor() {
         _disableInitializers();
@@ -153,7 +156,7 @@ contract MembershipERC721 is
         override(OwnableUpgradeable)
         onlyOwner
     {
-        revert("Cannot renounce ownership");
+        revert RenounceOwnership(owner());
     }
 
     /// @notice Pre-transfer hook that locks token transfers for this contract

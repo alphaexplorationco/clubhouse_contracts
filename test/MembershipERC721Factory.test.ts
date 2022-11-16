@@ -90,7 +90,7 @@ describe("Membership NFT Proxy Factory Contract", function () {
     // Before upgrade, tokens should be non-transferable
     await expect(
       proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)
-      ).to.be.revertedWithCustomError(proxy1, "NonTransferable").withArgs(tokenOwner.address, receiverAddress);
+      ).to.be.revertedWithCustomError(proxy1, "NonTransferable").withArgs(await proxy1.signer.getAddress(), receiverAddress);
 
     // Upgrade
     const upgradeTx = await beacon.connect(beaconOwner).functions.upgradeTo(upgradedImplementation.address);
@@ -114,6 +114,7 @@ describe("Membership NFT Proxy Factory Contract", function () {
   });
 
   it("renounceOwnership should revert", async function() {
-    await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
+    const [owner] = await proxyFactory.functions.owner()
+    await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWithCustomError(proxyFactory, "RenounceOwnership").withArgs(owner);
   });
 });
