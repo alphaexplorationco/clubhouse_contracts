@@ -88,7 +88,9 @@ describe("Membership NFT Proxy Factory Contract", function () {
     const receiverAddress = "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"
 
     // Before upgrade, tokens should be non-transferable
-    await expect(proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)).to.be.revertedWith("non transferable");
+    await expect(
+      proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)
+      ).to.be.revertedWithCustomError(proxy1, "NonTransferable").withArgs(tokenOwner.address, receiverAddress);
 
     // Upgrade
     const upgradeTx = await beacon.connect(beaconOwner).functions.upgradeTo(upgradedImplementation.address);

@@ -35,6 +35,20 @@ contract MembershipERC721 is
     event TrustedForwarderUpdated(address trustedForwarderAddress);
     event TokenMinted(uint256 tokenId, address to, uint256 expiryTimestamp);
 
+    /* Errors */
+    /// Empty token name or symbol when initializing contract
+    /// @param name user-provided token name
+    /// @param symbol user-provided symbol
+    error EmptyTokenNameOrSymbol(string name, string symbol); 
+    /// Attempt to transfer non-transferable token
+    /// @param from sender address
+    /// @param to recipient address
+    error NonTransferable(address from, address to);
+    /// Attemp to mint token to address with balance > 0
+    /// @param from minter address
+    /// @param to recipient address with balance > 0
+    error MintToAddressWithToken(address from, address to);
+
     constructor() {
         _disableInitializers();
     }
@@ -45,10 +59,9 @@ contract MembershipERC721 is
         string memory _symbol,
         address _trustedForwarder
     ) public initializer {
-        require(
-            bytes(_name).length != 0 && bytes(_symbol).length != 0,
-            "_name or _symbol empty"
-        );
+        if(bytes(_name).length == 0 || bytes(_symbol).length == 0){
+            revert EmptyTokenNameOrSymbol(_name, _symbol);
+        }
         __ERC721_init(_name, _symbol);
         __ERC721Burnable_init();
         __Ownable_init();
@@ -64,7 +77,9 @@ contract MembershipERC721 is
     /// expiry timestsamp of `expiryTimestamp`. This function can only be called
     /// by the contract owner.
     function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
-        require(balanceOf(to) == 0, "balanceOf(to) > 0");
+        if(balanceOf(to) != 0){
+            revert MintToAddressWithToken(_msgSender(), to);
+        }
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
         tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
@@ -147,7 +162,9 @@ contract MembershipERC721 is
         address to,
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable) {
-        require(from == address(0) || to == address(0) || transferable, "non transferable");
+        if(!transferable && from != address(0) && to != address(0)){
+            revert NonTransferable(from, to);
+        }
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
