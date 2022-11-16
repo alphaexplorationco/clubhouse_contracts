@@ -31,8 +31,17 @@ contract MembershipERC721 is
     bool transferable;
 
     /* Events */
+    /// Expiry timestamp update for a particular token
+    /// @param tokenId token id being updated
+    /// @param expiryTimestamp new expiry timestamp for the token
     event ExpiryTimestampUpdated(uint256 tokenId, uint256 expiryTimestamp);
+    /// Trusted forwarder addres updated for a contract instance
+    /// @param trustedForwarderAddress new trusted forwarder address
     event TrustedForwarderUpdated(address trustedForwarderAddress);
+    /// New token minted
+    /// @param tokenId tokenId of new token
+    /// @param to token recipient
+    /// @param expiryTimestamp expiry timestamp of minted token
     event TokenMinted(uint256 tokenId, address to, uint256 expiryTimestamp);
 
     /* Errors */

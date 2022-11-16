@@ -9,10 +9,16 @@ import "./MembershipERC721.sol";
 
 contract MembershipERC721Factory is Ownable {
     /* Events */
+    /// New proxy created via this factory
+    /// @param proxyAddress Address of created proxy
+    /// @param name Token name for proxy
+    /// @param symbol Token symbol for proxy
+    /// @param trustedForwarder Trusted forwarder address (EIP-2771) for proxy
     event MembershipERC721ProxyCreated(
         address proxyAddress,
         string name,
-        string symbol
+        string symbol,
+        address trustedForwarder
     );
 
     /* Errors */
@@ -51,7 +57,12 @@ contract MembershipERC721Factory is Ownable {
         MembershipERC721(proxyAddress).transferOwnership(_msgSender());
         proxyRegistry[proxyAddress] = true;
 
-        emit MembershipERC721ProxyCreated(proxyAddress, _name, _symbol);
+        emit MembershipERC721ProxyCreated(
+            proxyAddress,
+            _name,
+            _symbol,
+            _trustedForwarder
+        );
     }
 
     /// @notice Returns the address for the upgradeable beacon for this factory
