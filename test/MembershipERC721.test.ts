@@ -36,18 +36,18 @@ describe("Membership NFT Contract", function () {
     );
   });
 
-  it("setUp should set name, symbol, trusted forwarder, and display type correctly", async function () {
+  it("setUp should set revert if name or symbol is empty", async function () {
     await expect(BeaconProxy.deploy(
       beacon.address,
       Membership.interface.encodeFunctionData("setUp", ["", "T", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
-    )).to.be.revertedWith("_name or _symbol empty");
+    )).to.be.revertedWithCustomError(proxy, "EmptyTokenNameOrSymbol").withArgs("", "T");
     await expect(BeaconProxy.deploy(
       beacon.address,
       Membership.interface.encodeFunctionData("setUp", ["TEST", "", "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"])
-    )).to.be.revertedWith("_name or _symbol empty");
+    )).to.be.revertedWithCustomError(proxy, "EmptyTokenNameOrSymbol").withArgs("TEST", "");
   });
 
-  it("setUp should set revert if name or symbol is empty", async function () {
+  it("setUp should set name, symbol, trusted forwarder, and display type correctly", async function () {
     expect((await proxy.functions.name())[0]).to.equal("TEST")
     expect((await proxy.functions.symbol())[0]).to.equal("T")
     expect((await proxy.functions.trustedForwarder())[0]).to.equal(forwarderAddress)
@@ -64,7 +64,9 @@ describe("Membership NFT Contract", function () {
   });
 
   it("safeMint should revert on mint to address with balance > 0", async function () {
-    await expect(proxy.functions.safeMint(addressWithBalance, 1)).to.be.revertedWith("balanceOf(to) > 0")
+    await expect(
+      proxy.functions.safeMint(addressWithBalance, 1)
+      ).to.be.revertedWithCustomError(proxy, "MintToAddressWithToken").withArgs(await proxy.signer.getAddress(), addressWithBalance)
   });
 
   it("safeMint should revert if called by non-owner address", async function () {
@@ -113,7 +115,9 @@ describe("Membership NFT Contract", function () {
     const [signer] = await ethers.getSigners()
     const receipt = await (await proxy.functions.safeMint(signer.address, 1123)).wait()
     const tokenId = await receipt.events[0].args.tokenId
-    await expect(proxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).to.be.revertedWith("non transferable")
+    await expect(
+      proxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)
+    ).to.be.revertedWithCustomError(proxy, "NonTransferable").withArgs(signer.address, forwarderAddress)
     await (await proxy.functions.burn(tokenId)).wait()
     expect((await proxy.functions.balanceOf(signer.address))[0]).to.equal(0)
   });
@@ -127,7 +131,13 @@ describe("Membership NFT Contract", function () {
   });
 
   it("renounceOwnership should revert", async function (){
-    await expect(proxy.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
+    const [owner] = await proxy.functions.owner()
+    await expect(
+      proxy.functions.renounceOwnership()
+      ).to.be.revertedWithCustomError(proxy, "RenounceOwnership").withArgs(owner);
+    await expect(
+      proxy.connect("0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3").functions.renounceOwnership()
+      ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   it("setTransferability should make token transferable when set to true", async function (){ 
@@ -143,7 +153,9 @@ describe("Membership NFT Contract", function () {
     const [signer] = await ethers.getSigners()
     const receipt = await (await newProxy.functions.safeMint(signer.address, 1123)).wait()
     const tokenId = await receipt.events[0].args.tokenId
-    await expect(newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).to.be.revertedWith("non transferable")
+    await expect(
+      newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)
+    ).to.be.revertedWithCustomError(proxy, "NonTransferable").withArgs(signer.address, forwarderAddress)
 
     // Set transferability
     await (await newProxy.functions.setTransferability(true)).wait();
@@ -154,4 +166,11 @@ describe("Membership NFT Contract", function () {
     await (await newProxy.functions.transferFrom(signer.address, forwarderAddress, tokenId)).wait();
     expect((await newProxy.functions.balanceOf(signer.address))[0]).to.equal(0);
   })
+
+  it("setTransferability should rever when called by non-owner", async function (){
+    const nonOwner = (await ethers.getSigners())[4]
+    await expect(
+      proxy.connect(nonOwner).functions.setTransferability(true)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+  });
 });

@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -23,7 +22,7 @@ contract MembershipERC721 is
     CountersUpgradeable.Counter private _tokenIdCounter;
 
     /* Version recipient for OpenGSN */
-    string public override versionRecipient = "2.2.5";
+    string public constant override versionRecipient = "2.2.5";
 
     // Mapping from tokenId to membership expiry timestamp
     mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
@@ -32,23 +31,49 @@ contract MembershipERC721 is
     bool transferable;
 
     /* Events */
+    /// Expiry timestamp update for a particular token
+    /// @param tokenId token id being updated
+    /// @param expiryTimestamp new expiry timestamp for the token
     event ExpiryTimestampUpdated(uint256 tokenId, uint256 expiryTimestamp);
+    /// Trusted forwarder addres updated for a contract instance
+    /// @param trustedForwarderAddress new trusted forwarder address
     event TrustedForwarderUpdated(address trustedForwarderAddress);
+    /// New token minted
+    /// @param tokenId tokenId of new token
+    /// @param to token recipient
+    /// @param expiryTimestamp expiry timestamp of minted token
     event TokenMinted(uint256 tokenId, address to, uint256 expiryTimestamp);
+
+    /* Errors */
+    /// Empty token name or symbol when initializing contract
+    /// @param name user-provided token name
+    /// @param symbol user-provided symbol
+    error EmptyTokenNameOrSymbol(string name, string symbol);
+    /// Attempt to transfer non-transferable token
+    /// @param from sender address
+    /// @param to recipient address
+    error NonTransferable(address from, address to);
+    /// Attempt to mint token to address with balance > 0
+    /// @param from minter address
+    /// @param to recipient address with balance > 0
+    error MintToAddressWithToken(address from, address to);
+    /// Renounce ownership error
+    /// @param owner owner address
+    error RenounceOwnership(address owner);
 
     constructor() {
         _disableInitializers();
     }
 
+    /// @notice Initializer for contract. Sets token name, symbol and trusted forwarder (ERC-2771)
     function setUp(
         string memory _name,
         string memory _symbol,
         address _trustedForwarder
     ) public initializer {
-        require(
-            bytes(_name).length != 0 && bytes(_symbol).length != 0,
-            "_name or _symbol empty"
-        );
+        if (bytes(_name).length == 0 || bytes(_symbol).length == 0) {
+            revert EmptyTokenNameOrSymbol(_name, _symbol);
+        }
         __ERC721_init(_name, _symbol);
         __ERC721Burnable_init();
         __Ownable_init();
@@ -57,7 +82,6 @@ contract MembershipERC721 is
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        // TODO(akshaan): Replace with true URL once the image rendering service / endpoint is set up
         return "https://clubhouse.com/nft/";
     }
 
@@ -65,7 +89,9 @@ contract MembershipERC721 is
     /// expiry timestsamp of `expiryTimestamp`. This function can only be called
     /// by the contract owner.
     function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
-        require(balanceOf(to) == 0, "balanceOf(to) > 0");
+        if (balanceOf(to) != 0) {
+            revert MintToAddressWithToken(_msgSender(), to);
+        }
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
         tokenIdExpiryTimestamps[tokenId] = expiryTimestamp;
@@ -76,7 +102,7 @@ contract MembershipERC721 is
     /// @notice Updates the expiry timestamp for a given address. This function
     /// can only be called by the contract owner.
     function updateExpiryTimestamp(uint256 tokenId, uint256 updatedTimestamp)
-        public
+        external
         onlyOwner
     {
         tokenIdExpiryTimestamps[tokenId] = updatedTimestamp;
@@ -132,14 +158,14 @@ contract MembershipERC721 is
             );
     }
 
-    /// @notice
+    /// @notice Renounce ownership of contract instance. Always reverts.
     function renounceOwnership()
         public
         view
         override(OwnableUpgradeable)
         onlyOwner
     {
-        revert("Cannot renounce ownership");
+        revert RenounceOwnership(owner());
     }
 
     /// @notice Pre-transfer hook that locks token transfers for this contract
@@ -148,7 +174,9 @@ contract MembershipERC721 is
         address to,
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable) {
-        require(from == address(0) || to == address(0) || transferable, "non transferable");
+        if (!transferable && from != address(0) && to != address(0)) {
+            revert NonTransferable(from, to);
+        }
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -158,7 +186,7 @@ contract MembershipERC721 is
     }
 
     /// @notice Get transferability of token
-    function isTransferable() public view returns(bool) {
+    function isTransferable() public view returns (bool) {
         return transferable;
     }
 

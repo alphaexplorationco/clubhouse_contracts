@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
-import { Contract, ContractFactory } from "ethers";
+import { Contract, ContractFactory, Event } from "ethers";
 import { ethers } from "hardhat";
 
 describe("Membership NFT Proxy Factory Contract", function () {
@@ -55,7 +56,7 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(beaconImplementationAddress).to.equal(implementation.address);
   });
 
-  it("buildMembershipERC721Proxy should create proxy if does not exist for social club id", async function () {
+  it("buildMembershipERC721Proxy should create proxy and emit event", async function () {
     const proxy = Implementation.attach(proxy2.address);
     const [expectedOwner] = (await ethers.getSigners());
     const [proxyOwnerAddress] = await proxy.functions.owner()
@@ -66,6 +67,12 @@ describe("Membership NFT Proxy Factory Contract", function () {
     expect(proxyTokenName).to.equal("TEST2");
     expect(proxyTokenSymbol).to.equal("T2");
     expect(proxyForwarderAddress).to.equal(forwarder.address);
+  });
+
+  it("buildMembershipERC721Proxy should emit event", async function () {
+    expect(
+      await proxyFactory.functions.buildMembershipERC721Proxy("TEST2", "T2", forwarder.address)
+    ).to.emit(proxyFactory, "MembershipERC721ProxyCreated").withArgs(anyValue, "TEST2", "T2", forwarder.address)
   });
 
   it("buildMembershipERC721Proxy should not be callable by non-owner", async function () {
@@ -88,7 +95,9 @@ describe("Membership NFT Proxy Factory Contract", function () {
     const receiverAddress = "0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3"
 
     // Before upgrade, tokens should be non-transferable
-    await expect(proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)).to.be.revertedWith("non transferable");
+    await expect(
+      proxy1.functions.transferFrom(tokenOwner.address, receiverAddress, 0)
+      ).to.be.revertedWithCustomError(proxy1, "NonTransferable").withArgs(await proxy1.signer.getAddress(), receiverAddress);
 
     // Upgrade
     const upgradeTx = await beacon.connect(beaconOwner).functions.upgradeTo(upgradedImplementation.address);
@@ -112,6 +121,8 @@ describe("Membership NFT Proxy Factory Contract", function () {
   });
 
   it("renounceOwnership should revert", async function() {
-    await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWith("Cannot renounce ownership");
+    const [owner] = await proxyFactory.functions.owner()
+    await expect(proxyFactory.functions.renounceOwnership()).to.be.revertedWithCustomError(proxyFactory, "RenounceOwnership").withArgs(owner);
+    await expect(proxyFactory.connect("0x543c433afbF9E8bB5c621b61FA30f8b88cCa85a3").functions.renounceOwnership()).to.be.revertedWith("Ownable: caller is not the owner");
   });
 });
