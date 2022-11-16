@@ -8,7 +8,6 @@ import "./UpgradeableBeacon.sol";
 import "./MembershipERC721.sol";
 
 contract MembershipERC721Factory is Ownable {
-    
     /* Events */
     event MembershipERC721ProxyCreated(
         address proxyAddress,
@@ -23,7 +22,7 @@ contract MembershipERC721Factory is Ownable {
 
     address private immutable beaconAddress;
 
-    // Mapping from proxy address to bool. Used to prove that a proxy was 
+    // Mapping from proxy address to bool. Used to prove that a proxy was
     // created by this factory.
     mapping(address => bool) private proxyRegistry;
 

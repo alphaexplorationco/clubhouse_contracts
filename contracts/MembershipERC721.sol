@@ -39,7 +39,7 @@ contract MembershipERC721 is
     /// Empty token name or symbol when initializing contract
     /// @param name user-provided token name
     /// @param symbol user-provided symbol
-    error EmptyTokenNameOrSymbol(string name, string symbol); 
+    error EmptyTokenNameOrSymbol(string name, string symbol);
     /// Attempt to transfer non-transferable token
     /// @param from sender address
     /// @param to recipient address
@@ -62,7 +62,7 @@ contract MembershipERC721 is
         string memory _symbol,
         address _trustedForwarder
     ) public initializer {
-        if(bytes(_name).length == 0 || bytes(_symbol).length == 0){
+        if (bytes(_name).length == 0 || bytes(_symbol).length == 0) {
             revert EmptyTokenNameOrSymbol(_name, _symbol);
         }
         __ERC721_init(_name, _symbol);
@@ -80,7 +80,7 @@ contract MembershipERC721 is
     /// expiry timestsamp of `expiryTimestamp`. This function can only be called
     /// by the contract owner.
     function safeMint(address to, uint256 expiryTimestamp) public onlyOwner {
-        if(balanceOf(to) != 0){
+        if (balanceOf(to) != 0) {
             revert MintToAddressWithToken(_msgSender(), to);
         }
         uint256 tokenId = _tokenIdCounter.current();
@@ -165,7 +165,7 @@ contract MembershipERC721 is
         address to,
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable) {
-        if(!transferable && from != address(0) && to != address(0)){
+        if (!transferable && from != address(0) && to != address(0)) {
             revert NonTransferable(from, to);
         }
         super._beforeTokenTransfer(from, to, tokenId);
@@ -177,7 +177,7 @@ contract MembershipERC721 is
     }
 
     /// @notice Get transferability of token
-    function isTransferable() public view returns(bool) {
+    function isTransferable() public view returns (bool) {
         return transferable;
     }
 
