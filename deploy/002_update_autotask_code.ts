@@ -12,4 +12,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 };
 export default func;
-func.tags = ['goerli', 'autotask'];
+func.tags = ['goerli', 'mumbai', 'polygon', 'autotask'];

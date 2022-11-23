@@ -15,4 +15,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployContract(hre, membershipFactoryName, membershipImplemenationAddress, beaconOwner.address)
 };
 export default func;
-func.tags = ['hardhat', 'goerli', 'membership'];
+func.tags = ['hardhat', 'goerli', 'mumbai', 'polygon', 'membership'];
