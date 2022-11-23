@@ -15,23 +15,30 @@ import { Provider } from "@ethersproject/providers";
 
 dotenv.config();
 
+// Supported chains
+export const SUPPORTED_CHAINS = ["goerli", "mumbai", "polygon"]
+
+// Chain config object
+interface ChainConfig {
+    name: string;
+    // Chain-specific Relay API keys. These are chain specific and are used to manage
+    // specific OpenzeppelinDefender relays
+    // These can be found under each relay on the Defender UI
+    defenderRelayApiSecret: string,
+    defenderRelayApiKey: string;
+    // Chain-specific Autotask ids. These are not easily visible in the UI, but can be copied
+    // from the last segment of the URL when navigating to an autotask in the Defender UI.
+    // This can also be obtained from the webhook URL for the autotask which is formatted as
+    // https://api.defender.openzeppelin.com/autotasks/<AUTOTASK_ID>/...
+    // These are used to programatically update the code for a particular autotask.
+    defenderAutotaskId: string,
+  }
+
 // Team API Keys. These are chain agnostic and can be used to manage all
 // instances of a particular OpenZeppelin Defender service.
 // These can be found under the settings -> team api keys section on the Defender UI
 const AUTOTASK_API_KEY = process.env.AUTOTASK_API_KEY || "";
 const AUTOTASK_API_SECRET = process.env.AUTOTASK_API_SECRET || "";
-
-// Chain-specific Relay API keys. These are chain specific and are used to manage
-// specific OpenzeppelinDefender relays
-// These can be found under each relay on the Defender UI
-const GOERLI_DEFENDER_RELAY_API_KEY = process.env.GOERLI_DEFENDER_RELAY_API_KEY || "";
-const GOERLI_DEFENDER_RELAY_API_SECRET =
-    process.env.GOERLI_DEFENDER_RELAY_API_SECRET || "";
-
-// Chain-specific Autotask ids. These are not easily visible in the UI, but can be copied
-// from the last segment of the URL when navigating to an autotask in the Defender UI.
-// These are used to programatically update the code for a particular autotask.
-const GOERLI_AUTOTASK_ID = process.env.GOERLI_AUTOTASK_ID || "";
 
 // Spinner for stdout logging
 const spinner = ora({
@@ -39,10 +46,23 @@ const spinner = ora({
     spinner: "dots",
 });
 
+function getChainConfig(chainName: string): ChainConfig {
+    const envVarPrefix = chainName.toUpperCase()
+    return {
+        name: chainName,
+        defenderRelayApiKey: process.env[`${envVarPrefix}_DEFENDER_RELAY_API_KEY`] || "",
+        defenderRelayApiSecret: process.env[`${envVarPrefix}_DEFENDER_RELAY_API_SECRET`] || "",
+        defenderAutotaskId: process.env[`${envVarPrefix}_AUTOTASK_URL`]!.split("/")[4] || "",
+    }
+}
+
 function getDefenderRelaySignerAndProvider(
     apiKey: string,
     apiSecret: string
 ): [Signer, DefenderRelayProvider] {
+    if(getDefenderRelaySignerAndProvider._cache.relaySigner && getDefenderRelaySignerAndProvider._cache.provider){
+        return [getDefenderRelaySignerAndProvider._cache.relaySigner, getDefenderRelaySignerAndProvider._cache.provider]
+    } 
     const credentials = { apiKey: apiKey, apiSecret: apiSecret };
     const provider = new DefenderRelayProvider(credentials);
     const relaySigner = new DefenderRelaySigner(credentials, provider, {
@@ -51,12 +71,21 @@ function getDefenderRelaySignerAndProvider(
 
     return [relaySigner, provider];
 }
+getDefenderRelaySignerAndProvider._cache = {relaySigner: undefined, provider: undefined}
 
-async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
+export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
     const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
     spinner.start(`Creating ${signerType} signer`);
     let signer: Signer;
     let provider: Provider | DefenderRelayProvider;
+
+    if(!SUPPORTED_CHAINS.includes(hre.network.name)){
+        throw Error(
+            `Cannot get signer for unrecognized network ${hre.network.name}. 
+                Add network to hardhat.config.ts and API creds to this file and .env if using OpenZeppelin Defender`
+        );
+    }
+
     switch (hre.network.name) {
         case "localhost":
         case "hardhat":
@@ -66,17 +95,13 @@ async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Sign
             }
             provider = signer.provider;
             break;
-        case "goerli":
+        default:
+            const config: ChainConfig = getChainConfig(hre.network.name);
             [signer, provider] = getDefenderRelaySignerAndProvider(
-                GOERLI_DEFENDER_RELAY_API_KEY,
-                GOERLI_DEFENDER_RELAY_API_SECRET
+                config.defenderRelayApiKey,
+                config.defenderRelayApiSecret,
             );
             break;
-        default:
-            throw Error(
-                `Cannot get signer for unrecognized network ${hre.network.name}. 
-                 Add network to hardhat.config.ts and API creds to this file and .env if using OpenZeppelin Defender`
-            );
     }
 
     const signerChainId = await signer.getChainId();
@@ -98,7 +123,9 @@ async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Sign
     return signer;
 }
 
-async function saveDeployArtifact(
+async function checkDeploymentDiff()
+
+export async function saveDeployArtifact(
     hre: HardhatRuntimeEnvironment,
     name: string,
     contract: Contract
@@ -120,24 +147,22 @@ export async function updateDefenderAutotaskCodeForNetwork(
     console.log(`Updating Defender Autotask code...`);
 
     spinner.start(`Creating Autotask client`);
+
+    if(!SUPPORTED_CHAINS.includes(hre.network.name)){
+        spinner.fail(`Creating Autotask client`);
+        throw Error(
+            `Cannot update Defender Autotask for unrecognized network ${hre.network.name}`
+        );
+    }
+
     const credentials = { apiKey: AUTOTASK_API_KEY, apiSecret: AUTOTASK_API_SECRET };
     const autotaskClient = new AutotaskClient(credentials);
-    var autotaskId = "";
-    switch (hre.network.name) {
-        case "goerli":
-            autotaskId = GOERLI_AUTOTASK_ID;
-            break;
-        default:
-            spinner.fail(`Creating Autotask client`);
-            throw Error(
-                `Cannot update Defender Autotask for unrecognized network ${hre.network.name}`
-            );
-    }
+    var autotaskId = getChainConfig(hre.network.name).defenderAutotaskId;
     spinner.succeed(`Created autotask client`);
 
     spinner.start(`Fetching Forwarder contract ABI and address`);
     // Create forwarder.json in tempdir with forwarder contract address and ABI
-    const forwarderDeployment = hre.deployments.get("MinimalForwarder");
+    const forwarderDeployment = hre.deployments.get("Forwarder");
     const abi = (await forwarderDeployment).abi;
     const address = (await forwarderDeployment).address;
     spinner.succeed(`Fetched Forwarder contract ABI and address = ${address}`);
@@ -181,6 +206,22 @@ export async function deployContract(
     ...contractConstructorArgs: Array<any>
 ): Promise<string> {
     console.log(`Starting deploy for contract ${name}.sol ...`);
+
+    // Check deploy for differences
+    spinner.start(`Checking past ${name} deployments for differences`)
+    const artifact = await hre.deployments.getExtendedArtifact(name);
+    const pastDeployment = await hre.deployments.getOrNull(name);
+    if(
+        pastDeployment != null && 
+        pastDeployment.solcInputHash != null && 
+        artifact.solcInputHash != null && 
+        pastDeployment.solcInputHash === artifact.solcInputHash
+        ) {
+            spinner.warn(`No changes since last deploy for ${name}. Skipping.`)
+            return pastDeployment.address
+    }
+    spinner.succeed(`Changes found since last deploy`)
+    
 
     // Get signer for network
     const signer = await getSignerForNetwork(hre);
