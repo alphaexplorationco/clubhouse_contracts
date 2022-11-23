@@ -25,6 +25,12 @@ const config: HardhatUserConfig = {
         chainId: 80001,
         tags: ["mumbai"],
         live: true,
+      },
+      polygon: {
+        url: "https://polygon-rpc.com/",
+        chainId: 137,
+        tags: ["polygon"],
+        live: true,
       }
   },
   paths: {

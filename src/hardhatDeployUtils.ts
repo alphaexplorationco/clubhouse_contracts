@@ -16,7 +16,7 @@ import { Provider } from "@ethersproject/providers";
 dotenv.config();
 
 // Supported chains
-const SUPPORTED_CHAINS = ["goerli", "mumbai"]
+export const SUPPORTED_CHAINS = ["goerli", "mumbai", "polygon"]
 
 // Chain config object
 interface ChainConfig {

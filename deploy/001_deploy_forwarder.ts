@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract, getSignerForNetwork, saveDeployArtifact } from '../src/hardhatDeployUtils';
+import { deployContract, getSignerForNetwork, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 
@@ -37,4 +37,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
  
 };
 export default func;
-func.tags = ['hardhat', 'goerli', 'mumbai', 'polygon', 'forwarder'];
+func.tags = ['hardhat', 'forwarder', ...SUPPORTED_CHAINS];
