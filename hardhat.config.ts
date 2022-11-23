@@ -24,6 +24,7 @@ const config: HardhatUserConfig = {
         url: "https://rpc-mumbai.maticvigil.com/",
         chainId: 80001,
         tags: ["mumbai"],
+        live: true,
       }
   },
   paths: {

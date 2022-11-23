@@ -58,6 +58,9 @@ function getDefenderRelaySignerAndProvider(
     apiKey: string,
     apiSecret: string
 ): [Signer, DefenderRelayProvider] {
+    if(getDefenderRelaySignerAndProvider._cache.relaySigner && getDefenderRelaySignerAndProvider._cache.provider){
+        return [getDefenderRelaySignerAndProvider._cache.relaySigner, getDefenderRelaySignerAndProvider._cache.provider]
+    } 
     const credentials = { apiKey: apiKey, apiSecret: apiSecret };
     const provider = new DefenderRelayProvider(credentials);
     const relaySigner = new DefenderRelaySigner(credentials, provider, {
@@ -66,8 +69,9 @@ function getDefenderRelaySignerAndProvider(
 
     return [relaySigner, provider];
 }
+getDefenderRelaySignerAndProvider._cache = {relaySigner: undefined, provider: undefined}
 
-async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
+export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
     const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
     spinner.start(`Creating ${signerType} signer`);
     let signer: Signer;
@@ -155,7 +159,7 @@ export async function updateDefenderAutotaskCodeForNetwork(
 
     spinner.start(`Fetching Forwarder contract ABI and address`);
     // Create forwarder.json in tempdir with forwarder contract address and ABI
-    const forwarderDeployment = hre.deployments.get("MinimalForwarder");
+    const forwarderDeployment = hre.deployments.get("Forwarder");
     const abi = (await forwarderDeployment).abi;
     const address = (await forwarderDeployment).address;
     spinner.succeed(`Fetched Forwarder contract ABI and address = ${address}`);

@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract, saveDeployArtifact } from '../src/hardhatDeployUtils';
+import { deployContract, getSignerForNetwork, saveDeployArtifact } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 
@@ -12,8 +12,9 @@ const FORWARDER_CONTRACT_ADDRESSES = {
 
 async function registerDomainSeparator(hre: HardhatRuntimeEnvironment, contract: Contract) {
   const txReceipt = await (await contract.functions.registerDomainSeparator("ClubhouseForwarder", "1.0.0")).wait()
-  const domainHash = await txReceipt.events.slice(-1)[0].args.domainSeparator
-  const domainValue = await txReceipt.events.slice(-1)[0].args.domainValue
+  const event = await txReceipt.events[0]
+  const domainHash = await event.args.domainValue
+  const domainValue = await event.args.domainSeparator
   console.log(`✔ Registered domain separator for Forwarder with domainHash = ${domainHash}, domainValue= ${domainValue}`)
 }
 
@@ -23,8 +24,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ContractFactory = await ethers.getContractFactory(forwarderContractName)
 
   if (networkName in FORWARDER_CONTRACT_ADDRESSES) {
-    const contractAddress = FORWARDER_CONTRACT_ADDRESSES[networkName as keyof typeof FORWARDER_CONTRACT_ADDRESSES] 
-    const contract = ContractFactory.attach(contractAddress)
+    const contractAddress = FORWARDER_CONTRACT_ADDRESSES[networkName as keyof typeof FORWARDER_CONTRACT_ADDRESSES]
+    const signer = await getSignerForNetwork(hre)
+    const contract = ContractFactory.attach(contractAddress).connect(signer)
     await saveDeployArtifact(hre, forwarderContractName, contract)
     await registerDomainSeparator(hre, contract)
   } else {
