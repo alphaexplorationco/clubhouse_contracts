@@ -27,6 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const contractAddress = FORWARDER_CONTRACT_ADDRESSES[networkName as keyof typeof FORWARDER_CONTRACT_ADDRESSES]
     const signer = await getSignerForNetwork(hre)
     const contract = ContractFactory.attach(contractAddress).connect(signer)
+    console.log(`Saving artifact for existing singleton contract ${forwarderContractName}.sol ...`);
     await saveDeployArtifact(hre, forwarderContractName, contract)
     await registerDomainSeparator(hre, contract)
   } else {

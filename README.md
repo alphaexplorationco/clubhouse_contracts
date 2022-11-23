@@ -12,9 +12,7 @@ Clubhouse's Solidity smart contracts.
 
 This project uses the [hardhat](https://hardhat.org/) ethereum tools for solidity compiling and running a virtual ethereum environment for testing.
 
-`yarn deploy:hardhat` - will compile the solidity code and generate your contract artifacts (in the /artifacts directory), and generate all of the necessary types. This will also deploy all contracts to the local hardhat network using scripts in `deploy/` and the `hardhat-deploy` plugin (See the Deploying section for more details). Contract addresses and ABIs will be written to `deploy.json`
-
-`yarn deploy:goerli` - will do the same as the command above, but using the Goerli testnet instead of the local Hardhat network. This requires OpenZeppelin Defender credentials for a relayer and an autotask to be present in the local `.env` file
+`yarn deploy` - will compile the solidity code and generate your contract artifacts (in the /artifacts directory), and generate all of the necessary types. This will also deploy all contracts to the local hardhat network using scripts in `deploy/` and the `hardhat-deploy` plugin (See the Deploying section for more details). Contract addresses and ABIs will be written to `deploy.json`. Pass in the --network argument to this command with one of the values from `networks` in `hardhat.config.ts` to deploy to a network other than the local hardhat instance.
 
 ### Lint
 
