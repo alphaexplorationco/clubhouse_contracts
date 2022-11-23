@@ -17,9 +17,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         console.log("Saving interface artifac for USDC contract ...")
         saveDeployArtifact(hre, "USDC", usdcContract)
     } else {
-        const TestERC20 = ethers.getContractFactory("TestERC20")
-        const testERC20 = deployContract(hre, "TestERC20")
+        deployContract(hre, "TestERC20")
     }
 };
 export default func;
-func.tags = ['hardhat', 'baal', ...SUPPORTED_CHAINS];
+func.tags = ['hardhat', 'usdc', ...SUPPORTED_CHAINS];
