@@ -16,7 +16,8 @@ import { Provider } from "@ethersproject/providers";
 dotenv.config();
 
 // Supported chains
-export const SUPPORTED_CHAINS = ["goerli", "mumbai", "polygon"]
+export const SUPPORTED_CHAINS = ["hardhat", "goerli", "mumbai", "polygon"]
+export const LOCAL_CHAINS = ["hardhat", "localhost"]
 
 // Chain config object
 interface ChainConfig {
@@ -79,7 +80,7 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
     let signer: Signer;
     let provider: Provider | DefenderRelayProvider;
 
-    if(!SUPPORTED_CHAINS.includes(hre.network.name)){
+    if(!SUPPORTED_CHAINS.includes(hre.network.name) && !LOCAL_CHAINS.includes(hre.network.name)){
         throw Error(
             `Cannot get signer for unrecognized network ${hre.network.name}. 
                 Add network to hardhat.config.ts and API creds to this file and .env if using OpenZeppelin Defender`
