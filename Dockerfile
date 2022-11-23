@@ -15,4 +15,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com
 RUN apt-get update && apt-get install -y yarn git
 RUN mkdir -p /app
 
+COPY . /app
+
 WORKDIR /app
+
+RUN yarn install
