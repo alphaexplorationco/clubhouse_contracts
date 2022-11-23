@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract, getSignerForNetwork, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
+import { deployContract, getSignerForNetwork, LOCAL_CHAINS, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -22,4 +22,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployContract(hre, membershipFactoryName, membershipImplemenationAddress, await signer.getAddress())
 };
 export default func;
-func.tags = ['hardhat', 'membership', ...SUPPORTED_CHAINS];
+func.tags = ['membership', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];

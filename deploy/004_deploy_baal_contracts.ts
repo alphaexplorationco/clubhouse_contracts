@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract, getSignerForNetwork, LOCAL_CHAINS, saveDeployArtifact } from '../src/hardhatDeployUtils';
+import { deployContract, getSignerForNetwork, LOCAL_CHAINS, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 import { deployments } from "@daohaus/baal-contracts/src/addresses/deployed.js";
 
@@ -36,16 +36,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         )
         const baalSummoner = await ethers.getContractAt("BaalSummoner", baalSummonerAddress)
         await baalSummoner.initialize()
-        await baalSummoner.setAddrs( 
-            baalSingletonAddress, 
-            gnosisSafeSingletonAddress, 
-            compatibilityFallbackHandler, 
-            multisendAddress,
-            gnosisSafeProxyFactoryAddress,
-            moduleProxyFactoryAddress,
-            lootSingletonAddress,
-            sharesSingletonAddress, 
-        )
     } else { // For non-local chains, save artifacts with baal addresses
         console.log(`Creating Baal contract artifacts...`)
         const addresses = deployments[0].addresses
@@ -68,4 +58,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 };
 export default func;
-func.tags = ['hardhat', 'baal'];
+func.tags = ['baal', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];

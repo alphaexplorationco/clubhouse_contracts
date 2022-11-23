@@ -43,6 +43,6 @@
   "scripts": {
     "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write",
     "predeploy": "cd node_modules/@daohaus/baal-contracts/ && yarn install && yarn build:sol && yarn build:abi",
-    "deploy": "yarn hardhat deploy --export-all ./deploy.json --write True"
+    "deploy": "yarn hardhat deploy --reset --export-all ./deploy.json --write True"
   }
 }

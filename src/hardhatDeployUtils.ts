@@ -16,7 +16,7 @@ import { Provider } from "@ethersproject/providers";
 dotenv.config();
 
 // Supported chains
-export const SUPPORTED_CHAINS = ["hardhat", "goerli", "mumbai", "polygon"]
+export const SUPPORTED_CHAINS = ["goerli", "polygon", "mumbai"]
 export const LOCAL_CHAINS = ["hardhat", "localhost"]
 
 // Chain config object
@@ -124,8 +124,6 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
     return signer;
 }
 
-async function checkDeploymentDiff()
-
 export async function saveDeployArtifact(
     hre: HardhatRuntimeEnvironment,
     name: string,
@@ -207,22 +205,6 @@ export async function deployContract(
     ...contractConstructorArgs: Array<any>
 ): Promise<string> {
     console.log(`Starting deploy for contract ${name}.sol ...`);
-
-    // Check deploy for differences
-    spinner.start(`Checking past ${name} deployments for differences`)
-    const artifact = await hre.deployments.getExtendedArtifact(name);
-    const pastDeployment = await hre.deployments.getOrNull(name);
-    if(
-        pastDeployment != null && 
-        pastDeployment.solcInputHash != null && 
-        artifact.solcInputHash != null && 
-        pastDeployment.solcInputHash === artifact.solcInputHash
-        ) {
-            spinner.warn(`No changes since last deploy for ${name}. Skipping.`)
-            return pastDeployment.address
-    }
-    spinner.succeed(`Changes found since last deploy`)
-    
 
     // Get signer for network
     const signer = await getSignerForNetwork(hre);

@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
+import { deployContract, LOCAL_CHAINS, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 
 const USDC_CONTRACT_ADDRESSES = {
@@ -12,13 +12,12 @@ const USDC_CONTRACT_ADDRESSES = {
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) { 
     if (SUPPORTED_CHAINS.includes(hre.network.name)) {
         const usdcAddress = USDC_CONTRACT_ADDRESSES[hre.network.name as keyof typeof USDC_CONTRACT_ADDRESSES]
-        console.log(usdcAddress)
         const usdcContract = await ethers.getContractAt("IERC20", usdcAddress)
-        console.log("Saving interface artifac for USDC contract ...")
+        console.log("Saving interface artifact for USDC contract ...")
         saveDeployArtifact(hre, "USDC", usdcContract)
     } else {
-        deployContract(hre, "TestERC20")
+        deployContract(hre, "USDC")
     }
 };
 export default func;
-func.tags = ['hardhat', 'usdc', ...SUPPORTED_CHAINS];
+func.tags = ['usdc', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];
