@@ -42,7 +42,7 @@
   },
   "scripts": {
     "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write",
-    "predeploy:hardhat": "cd node_modules/@daohaus/baal-contracts/ && yarn install && yarn build",
+    "predeploy:hardhat": "cd node_modules/@daohaus/baal-contracts/ && yarn install --production && yarn build",
     "deploy:hardhat": "yarn hardhat deploy --reset --network hardhat --export-all ./deploy.json --write True --tags hardhat",
     "deploy:goerli": "yarn hardhat deploy --reset --network goerli --export-all ./deploy.json --write True --tags goerli"
   }
