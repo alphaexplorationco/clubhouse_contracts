@@ -28,6 +28,8 @@ interface ChainConfig {
     defenderRelayApiKey: string;
     // Chain-specific Autotask ids. These are not easily visible in the UI, but can be copied
     // from the last segment of the URL when navigating to an autotask in the Defender UI.
+    // This can also be obtained from the webhook URL for the autotask which is formatted as
+    // https://api.defender.openzeppelin.com/autotasks/<AUTOTASK_ID>/...
     // These are used to programatically update the code for a particular autotask.
     defenderAutotaskId: string,
   }
@@ -50,7 +52,7 @@ function getChainConfig(chainName: string): ChainConfig {
         name: chainName,
         defenderRelayApiKey: process.env[`${envVarPrefix}_DEFENDER_RELAY_API_KEY`] || "",
         defenderRelayApiSecret: process.env[`${envVarPrefix}_DEFENDER_RELAY_API_SECRET`] || "",
-        defenderAutotaskId: process.env[`${envVarPrefix}_AUTOTASK_URL`]!.split("/").pop() || "",
+        defenderAutotaskId: process.env[`${envVarPrefix}_AUTOTASK_URL`]!.split("/")[4] || "",
     }
 }
 
@@ -153,8 +155,7 @@ export async function updateDefenderAutotaskCodeForNetwork(
 
     const credentials = { apiKey: AUTOTASK_API_KEY, apiSecret: AUTOTASK_API_SECRET };
     const autotaskClient = new AutotaskClient(credentials);
-    var autotaskId = "";
-    autotaskId = getChainConfig(hre.network.name).defenderAutotaskId;
+    var autotaskId = getChainConfig(hre.network.name).defenderAutotaskId;
     spinner.succeed(`Created autotask client`);
 
     spinner.start(`Fetching Forwarder contract ABI and address`);
