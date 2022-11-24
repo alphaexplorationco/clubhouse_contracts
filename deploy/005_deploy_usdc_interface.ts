@@ -14,12 +14,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let usdcContract: Contract;
     if (SUPPORTED_CHAINS.includes(hre.network.name)) {
         const usdcAddress = USDC_CONTRACT_ADDRESSES[hre.network.name as keyof typeof USDC_CONTRACT_ADDRESSES]
-        usdcContract = await ethers.getContractAt("IERC20", usdcAddress)
+        usdcContract = await ethers.getContractAt("USDC", usdcAddress)
         console.log("Saving interface artifact for USDC contract ...")
     } else {
-        const USDC = await ethers.getContractFactory("USDC")
+        const USDC = await ethers.getContractFactory("TestERC20")
         const deployedContract = await USDC.deploy().then(f => f.deployed())  
-        usdcContract = await ethers.getContractAt("IERC20", deployedContract.address)
+        usdcContract = await ethers.getContractAt("USDC", deployedContract.address)
     }
     await saveDeployArtifact(hre, "IERC20", usdcContract)
 };
