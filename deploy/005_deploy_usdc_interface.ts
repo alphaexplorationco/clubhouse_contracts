@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
+import { deployContract, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
 import { ethers } from 'hardhat';
 import { Contract } from 'ethers';
 
@@ -11,17 +11,17 @@ const USDC_CONTRACT_ADDRESSES = {
 }
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) { 
-    let usdcContract: Contract;
+    console.log("Saving interface artifact for USDC contract ...")
     if (SUPPORTED_CHAINS.includes(hre.network.name)) {
         const usdcAddress = USDC_CONTRACT_ADDRESSES[hre.network.name as keyof typeof USDC_CONTRACT_ADDRESSES]
-        usdcContract = await ethers.getContractAt("USDC", usdcAddress)
-        console.log("Saving interface artifact for USDC contract ...")
+        const artifact = await hre.deployments.getArtifact("contracts/fixtures/USDC.sol:USDC")
+        hre.deployments.save("USDC", {abi: artifact.abi, address: usdcAddress })
     } else {
-        const USDC = await ethers.getContractFactory("TestERC20")
-        const deployedContract = await USDC.deploy().then(f => f.deployed())  
-        usdcContract = await ethers.getContractAt("USDC", deployedContract.address)
+        const USDC = await ethers.getContractFactory("contracts/test/USDC.sol:USDC")
+        const usdc = await USDC.deploy().then(f => f.deployed())
+        const artifact = await hre.deployments.getArtifact("contracts/test/USDC.sol:USDC")
+        hre.deployments.save("USDC", {abi: artifact.abi, address: usdc.address })
     }
-    await saveDeployArtifact(hre, "IERC20", usdcContract)
 };
 export default func;
 func.tags = ['usdc'];

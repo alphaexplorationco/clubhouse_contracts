@@ -225,6 +225,15 @@ export async function saveDeployArtifact(
         txReceipt = undefined
     }
 
+    let executeArg
+    if(execute == null){
+        executeArg = undefined
+    } else {
+        executeArg = {
+            methodName: execute.methodName,
+            args: execute.args || []
+        }
+    }
     const deploymentSubmission = {
         address: contract.address,
         abi: artifact.abi,
@@ -242,7 +251,7 @@ export async function saveDeployArtifact(
         devdoc: artifact.devdoc,
         methodIdentifiers: artifact.methodIdentifiers,
         storageLayout: artifact.storageLayout,
-        execute: execute,
+        execute: executeArg
     };
     await hre.deployments.save(name, deploymentSubmission);
     spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}/${name}.json`);
@@ -319,17 +328,19 @@ export async function deployContract(
     const signer = await getSignerForNetwork(hre);
 
     // Check contract for differences
-    const differences = await fetchIfDifferent(
-        hre, signer,
-        name, 
-        {
-            from: await signer.getAddress(),
-            args: contractConstructorArgs,
+    if(!LOCAL_CHAINS.includes(hre.network.name)){
+        const differences = await fetchIfDifferent(
+            hre, signer,
+            name, 
+            {
+                from: await signer.getAddress(),
+                args: contractConstructorArgs,
+            }
+        )
+        if(!differences.differences){
+            spinner.warn(`No changes since last deploy for ${name}.sol. Skipping.`)
+            return differences.address!
         }
-    )
-    if(!differences.differences){
-        spinner.warn(`No changes since last deploy for ${name}.sol. Skipping.`)
-        return differences.address!
     }
 
     // Deploy contract
