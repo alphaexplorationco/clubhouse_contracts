@@ -5,7 +5,7 @@
   "main": "yarn add --dev hardhat",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@daohaus/baal-contracts": "https://github.com/HausDAO/Baal#edb2b7ab419b74ebea6757fff664d4743fc4c3be",
+    "@daohaus/baal-contracts": "https://github.com/HausDAO/Baal#546a58b9271056bfd5c34a952f8cb724acc91a42",
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
@@ -43,6 +43,6 @@
   "scripts": {
     "lint": "prettier --config .prettierrc 'src/**/*.ts' 'contracts/**/*.sol' --write",
     "predeploy": "cd node_modules/@daohaus/baal-contracts/ && yarn install && yarn build:sol && yarn build:abi",
-    "deploy": "yarn hardhat deploy --reset --export-all ./deploy.json --write True"
+    "deploy": "yarn hardhat deploy --export-all ./deploy.json --write True"
   }
 }

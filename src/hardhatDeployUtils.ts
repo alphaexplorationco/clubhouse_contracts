@@ -2,16 +2,19 @@ import {
     DefenderRelayProvider,
     DefenderRelaySigner,
 } from "defender-relay-client/lib/ethers";
-import { Contract, Signer } from "ethers";
+import { Contract, ContractFactory, Signer } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import * as dotenv from "dotenv";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { Artifact, HardhatRuntimeEnvironment } from "hardhat/types";
 import ora from "ora";
 import { AutotaskClient } from "defender-autotask-client";
 import path from "path";
 import fs from "fs";
 import os from "os";
 import { Provider } from "@ethersproject/providers";
+import { DeployOptions, Execute, Receipt } from "hardhat-deploy/types";
+import { hrtime } from "process";
+import { exec } from "child_process";
 
 dotenv.config();
 
@@ -57,26 +60,29 @@ function getChainConfig(chainName: string): ChainConfig {
     }
 }
 
-function getDefenderRelaySignerAndProvider(
-    apiKey: string,
-    apiSecret: string
-): [Signer, DefenderRelayProvider] {
-    if(getDefenderRelaySignerAndProvider._cache.relaySigner && getDefenderRelaySignerAndProvider._cache.provider){
-        return [getDefenderRelaySignerAndProvider._cache.relaySigner, getDefenderRelaySignerAndProvider._cache.provider]
-    } 
-    const credentials = { apiKey: apiKey, apiSecret: apiSecret };
-    const provider = new DefenderRelayProvider(credentials);
-    const relaySigner = new DefenderRelaySigner(credentials, provider, {
-        speed: "fast",
-    });
-
-    return [relaySigner, provider];
-}
-getDefenderRelaySignerAndProvider._cache = {relaySigner: undefined, provider: undefined}
+// Memoized so that provider etc. are not init-ed multiple times in the same deploy
+const getDefenderRelaySignerAndProvider = (() => {
+    let cache = {}
+    return (hre: HardhatRuntimeEnvironment) => {
+        if (hre.network.name in cache){
+            const cachedValue = cache[hre.network.name as keyof typeof cache]
+            return cachedValue
+        } else {
+            const config: ChainConfig = getChainConfig(hre.network.name);
+            const apiKey = config.defenderRelayApiKey
+            const apiSecret = config.defenderRelayApiSecret
+            const credentials = { apiKey: apiKey, apiSecret: apiSecret };
+            const provider = new DefenderRelayProvider(credentials);
+            const relaySigner = new DefenderRelaySigner(credentials, provider, {
+                speed: "safeLow",
+            });
+            cache[hre.network.name as keyof typeof cache] = [relaySigner, provider]
+            return [relaySigner, provider]
+        }
+    }
+})()
 
 export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promise<Signer> {
-    const signerType = hre.network.name == "hardhat" ? "local" : "Defender Relay";
-    spinner.start(`Creating ${signerType} signer`);
     let signer: Signer;
     let provider: Provider | DefenderRelayProvider;
 
@@ -97,10 +103,8 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
             provider = signer.provider;
             break;
         default:
-            const config: ChainConfig = getChainConfig(hre.network.name);
             [signer, provider] = getDefenderRelaySignerAndProvider(
-                config.defenderRelayApiKey,
-                config.defenderRelayApiSecret,
+                hre,
             );
             break;
     }
@@ -113,30 +117,143 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
     // @ts-ignore
     hre.network.provider = provider;
     if (signerChainId != runtimeChainId) {
-        spinner.fail();
         throw Error(
             `Defender Relay signer chainId (${signerChainId}) does not match hardhat config chainId (${runtimeChainId})`
         );
     }
-    spinner.succeed(
-        `Created ${signerType} signer with address ${await signer.getAddress()}`
-    );
     return signer;
 }
+
+async function getArtifactFromOptions(
+    hre: HardhatRuntimeEnvironment,
+    name: string,
+    options: DeployOptions
+  ): Promise<{
+    artifact: Artifact;
+    artifactName?: string;
+  }> {
+    let artifact: Artifact;
+    let artifactName: string | undefined;
+    if (options.contract) {
+      if (typeof options.contract === 'string') {
+        artifactName = options.contract;
+        artifact = await hre.deployments.getArtifact(artifactName);
+      } else {
+        artifact = options.contract as Artifact; // TODO better handling
+      }
+    } else {
+      artifactName = name;
+      artifact = await hre.deployments.getArtifact(artifactName);
+    }
+    return {artifact, artifactName};
+  }
+
+async function fetchIfDifferent(
+    hre: HardhatRuntimeEnvironment,
+    signer: Signer,
+    name: string,
+    options: DeployOptions
+  ): Promise<{differences: boolean; address?: string}> {
+    options = {...options}; // ensure no change
+    const argArray = options.args ? [...options.args] : [];
+
+    const deployment = await hre.deployments.getOrNull(name);
+    if (deployment) {
+      if (options.skipIfAlreadyDeployed) {
+        return {differences: false, address: undefined}; // TODO check receipt, see below
+      }
+      // TODO transactionReceipt + check for status
+      let transactionDetailsAvailable = false;
+      let transaction;
+      if (deployment.receipt) {
+        transactionDetailsAvailable = !!deployment.receipt.transactionHash;
+        if (transactionDetailsAvailable) {
+          transaction = await signer.provider!.getTransaction(
+            deployment.receipt.transactionHash
+          );
+        }
+      } else if (deployment.transactionHash) {
+        transactionDetailsAvailable = true;
+        transaction = await signer.provider!.getTransaction(deployment.transactionHash);
+      }
+
+      if (transaction) {
+        const {artifact} = await getArtifactFromOptions(hre, name, options);
+        const abi = artifact.abi;
+        if(options.libraries) {
+            throw Error("Library linking not supported when checking for deployment differences")
+        }
+        const factory = new ContractFactory(abi, artifact.bytecode, signer);
+        const newTransaction = factory.getDeployTransaction(...argArray);
+        const newData = newTransaction.data?.toString();
+        if (transaction.data !== newData) {
+            return {differences: true, address: deployment.address};
+        }
+        return {differences: false, address: deployment.address}; 
+      } else {
+        if (transactionDetailsAvailable) {
+          throw new Error(
+            `cannot get the transaction for ${name}'s previous deployment, please check your node synced status.`
+          );
+        } else {
+          console.error(
+            `no transaction details found for ${name}'s previous deployment, if the deployment is t be discarded, please delete the file`
+          );
+          return {differences: false, address: deployment.address};
+        }
+      }
+    }
+    return {differences: true, address: undefined};
+  }
 
 export async function saveDeployArtifact(
     hre: HardhatRuntimeEnvironment,
     name: string,
-    contract: Contract
+    contract: Contract,
+    args: Array<any> = [],
+    execute?: Execute,
 ): Promise<void> {
     spinner.start(`Saving artifact`);
     const artifact = await hre.deployments.getExtendedArtifact(name);
+    const pastDeployments = await hre.deployments.getDeploymentsFromAddress(contract.address)
+    const signer = getSignerForNetwork(hre)
+    
+    let txReceipt;
+    if(contract.deployTransaction != null){
+        txReceipt = await ((await signer).provider?.getTransactionReceipt(contract.deployTransaction.hash))
+    } else {
+        txReceipt = undefined
+    }
+
+    let executeArg
+    if(execute == null){
+        executeArg = undefined
+    } else {
+        executeArg = {
+            methodName: execute.methodName,
+            args: execute.args || []
+        }
+    }
     const deploymentSubmission = {
         address: contract.address,
-        ...artifact,
+        abi: artifact.abi,
+        receipt: txReceipt,
+        transactionHash: contract.deployTransaction?.hash,
+        args: args,
+        history: pastDeployments,
+        linkedData: artifact.linkReferences,
+        solcInput: artifact.solcInput,
+        solcInputHash: artifact.solcInputHash,
+        metadata: artifact.metadata,
+        bytecode: artifact.bytecode,
+        deployedBytecode: artifact.deployedBytecode,
+        userdoc: artifact.userdoc,
+        devdoc: artifact.devdoc,
+        methodIdentifiers: artifact.methodIdentifiers,
+        storageLayout: artifact.storageLayout,
+        execute: executeArg
     };
     await hre.deployments.save(name, deploymentSubmission);
-
     spinner.succeed(`Saved artifacts to /deployments/${hre.network.name}/${name}.json`);
 }
 
@@ -202,12 +319,29 @@ export async function updateDefenderAutotaskCodeForNetwork(
 export async function deployContract(
     hre: HardhatRuntimeEnvironment,
     name: string,
-    ...contractConstructorArgs: Array<any>
+    contractConstructorArgs: Array<any> = [],
+    execute?: Execute,
 ): Promise<string> {
     console.log(`Starting deploy for contract ${name}.sol ...`);
 
     // Get signer for network
     const signer = await getSignerForNetwork(hre);
+
+    // Check contract for differences
+    if(!LOCAL_CHAINS.includes(hre.network.name)){
+        const differences = await fetchIfDifferent(
+            hre, signer,
+            name, 
+            {
+                from: await signer.getAddress(),
+                args: contractConstructorArgs,
+            }
+        )
+        if(!differences.differences){
+            spinner.warn(`No changes since last deploy for ${name}.sol. Skipping.`)
+            return differences.address!
+        }
+    }
 
     // Deploy contract
     spinner.start(
@@ -216,17 +350,17 @@ export async function deployContract(
     const contractFactory = (await ethers.getContractFactory(name)).connect(signer);
 
     let contract: Contract;
+    const deployTx = await contractFactory.getDeployTransaction(...contractConstructorArgs)
     contract = await contractFactory
         .deploy(...contractConstructorArgs)
         .then((f) => f.deployed());
     await contract.deployed();
-
     spinner.succeed(
         `Deployed ${name} to ${hre.network.name} at address ${contract.address} with args = [${contractConstructorArgs}]`
     );
 
     // Save artifacts
-    await saveDeployArtifact(hre, name, contract);
+    await saveDeployArtifact(hre, name, contract, contractConstructorArgs, execute);
 
     return contract.address;
 }

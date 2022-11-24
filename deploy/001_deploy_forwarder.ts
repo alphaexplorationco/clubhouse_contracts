@@ -21,20 +21,37 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const forwarderContractName = "Forwarder"
   const networkName = hre.network.name
   const ContractFactory = await ethers.getContractFactory(forwarderContractName)
+  const signer = await getSignerForNetwork(hre)
 
   if (networkName in FORWARDER_CONTRACT_ADDRESSES) {
     const contractAddress = FORWARDER_CONTRACT_ADDRESSES[networkName as keyof typeof FORWARDER_CONTRACT_ADDRESSES]
-    const signer = await getSignerForNetwork(hre)
     const contract = ContractFactory.attach(contractAddress).connect(signer)
     console.log(`Saving artifact for existing singleton contract ${forwarderContractName}.sol ...`);
-    await saveDeployArtifact(hre, forwarderContractName, contract)
+    await saveDeployArtifact(
+      hre, 
+      forwarderContractName, 
+      contract, 
+      [], 
+      {
+        name: forwarderContractName, 
+        methodName: "registerDomainSeparator", 
+        args: ["ClubhouseForwarder", "1.0.0"], 
+        from: await signer.getAddress()
+      }
+    )
     await registerDomainSeparator(contract)
   } else {
-    const contractAddress = await deployContract(hre, forwarderContractName)
-    const contract = ContractFactory.attach(contractAddress)
+    const execute = {
+        name: forwarderContractName, 
+        methodName: "registerDomainSeparator", 
+        args: ["ClubhouseForwarder", "1.0.0"], 
+        from: await signer.getAddress()
+      }
+    const contractAddress = await deployContract(hre, forwarderContractName, [], execute)
+    const contract = ContractFactory.attach(contractAddress).connect(signer)
     await registerDomainSeparator(contract)
   }
  
 };
 export default func;
-func.tags = ['forwarder', ...SUPPORTED_CHAINS];
+func.tags = ['forwarder'];
