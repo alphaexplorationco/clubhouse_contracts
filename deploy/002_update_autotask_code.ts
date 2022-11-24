@@ -1,10 +1,10 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { SUPPORTED_CHAINS, updateDefenderAutotaskCodeForNetwork } from '../src/hardhatDeployUtils';
+import { LOCAL_CHAINS, SUPPORTED_CHAINS, updateDefenderAutotaskCodeForNetwork } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Skip autotask update when deploying to local network
-    if(hre.network.name == "hardhat"){
+    if(LOCAL_CHAINS.includes(hre.network.name)){
         return
     }
 
@@ -12,4 +12,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 };
 export default func;
-func.tags = ['autotask', ...SUPPORTED_CHAINS];
+func.tags = ['autotask'];

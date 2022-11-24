@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     signer = await getSignerForNetwork(hre)
   }
   const [beaconOwner] = await ethers.getSigners() 
-  await deployContract(hre, membershipFactoryName, membershipImplemenationAddress, await signer.getAddress())
+  await deployContract(hre, membershipFactoryName, [membershipImplemenationAddress, await signer.getAddress()])
 };
 export default func;
-func.tags = ['membership', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];
+func.tags = ['membership'];

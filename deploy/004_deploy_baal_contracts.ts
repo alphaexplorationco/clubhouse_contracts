@@ -36,6 +36,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         )
         const baalSummoner = await ethers.getContractAt("BaalSummoner", baalSummonerAddress)
         await baalSummoner.initialize()
+        await baalSummoner.setAddrs( 
+            baalSingletonAddress, 
+            gnosisSafeSingletonAddress, 
+            compatibilityFallbackHandler, 
+            multisendAddress,
+            gnosisSafeProxyFactoryAddress,
+            moduleProxyFactoryAddress,
+            lootSingletonAddress,
+            sharesSingletonAddress, 
+        )
     } else { // For non-local chains, save artifacts with baal addresses
         console.log(`Creating Baal contract artifacts...`)
         const addresses = deployments[0].addresses
@@ -58,4 +68,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 };
 export default func;
-func.tags = ['baal', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];
+func.tags = ['baal'];
