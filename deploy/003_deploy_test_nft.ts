@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract } from '../src/hardhatDeployUtils';
+import { deployContract, LOCAL_CHAINS } from '../src/hardhatDeployUtils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const testNFTContractName = "TestERC721"
@@ -8,4 +8,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deployContract(hre, testNFTContractName, trustedForwarderAddress)
 };
 export default func;
-func.tags = ['hardhat', 'test_nft'];
+func.tags = ['test_nft', ...LOCAL_CHAINS];

@@ -16,7 +16,8 @@ import { Provider } from "@ethersproject/providers";
 dotenv.config();
 
 // Supported chains
-export const SUPPORTED_CHAINS = ["goerli", "mumbai", "polygon"]
+export const SUPPORTED_CHAINS = ["goerli", "polygon", "mumbai"]
+export const LOCAL_CHAINS = ["hardhat", "localhost"]
 
 // Chain config object
 interface ChainConfig {
@@ -79,7 +80,7 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
     let signer: Signer;
     let provider: Provider | DefenderRelayProvider;
 
-    if(!SUPPORTED_CHAINS.includes(hre.network.name)){
+    if(!SUPPORTED_CHAINS.includes(hre.network.name) && !LOCAL_CHAINS.includes(hre.network.name)){
         throw Error(
             `Cannot get signer for unrecognized network ${hre.network.name}. 
                 Add network to hardhat.config.ts and API creds to this file and .env if using OpenZeppelin Defender`
@@ -122,8 +123,6 @@ export async function getSignerForNetwork(hre: HardhatRuntimeEnvironment): Promi
     );
     return signer;
 }
-
-async function checkDeploymentDiff()
 
 export async function saveDeployArtifact(
     hre: HardhatRuntimeEnvironment,
@@ -206,22 +205,6 @@ export async function deployContract(
     ...contractConstructorArgs: Array<any>
 ): Promise<string> {
     console.log(`Starting deploy for contract ${name}.sol ...`);
-
-    // Check deploy for differences
-    spinner.start(`Checking past ${name} deployments for differences`)
-    const artifact = await hre.deployments.getExtendedArtifact(name);
-    const pastDeployment = await hre.deployments.getOrNull(name);
-    if(
-        pastDeployment != null && 
-        pastDeployment.solcInputHash != null && 
-        artifact.solcInputHash != null && 
-        pastDeployment.solcInputHash === artifact.solcInputHash
-        ) {
-            spinner.warn(`No changes since last deploy for ${name}. Skipping.`)
-            return pastDeployment.address
-    }
-    spinner.succeed(`Changes found since last deploy`)
-    
 
     // Get signer for network
     const signer = await getSignerForNetwork(hre);

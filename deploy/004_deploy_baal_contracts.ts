@@ -1,43 +1,61 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deployContract } from '../src/hardhatDeployUtils';
+import { deployContract, getSignerForNetwork, LOCAL_CHAINS, saveDeployArtifact, SUPPORTED_CHAINS } from '../src/hardhatDeployUtils';
+import { ethers } from 'hardhat';
+import { deployments } from "@daohaus/baal-contracts/src/addresses/deployed.js";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    // Deploy Baal singleton
-    const baalSingletonAddress = await deployContract(hre, "Baal");
+    // If local chain, deploy all Baal contracts
+    if(LOCAL_CHAINS.includes(hre.network.name)) {
+        // Deploy Baal singleton
+        const baalSingletonAddress = await deployContract(hre, "Baal");
 
-    // Deploy Gnosis Safe contract
-    const gnosisSafeSingletonAddress = await deployContract(hre, "GnosisSafe")
+        // Deploy Gnosis Safe contract
+        const gnosisSafeSingletonAddress = await deployContract(hre, "GnosisSafe")
 
-    // Deploy Gnosis Safe factory
-    const gnosisSafeProxyFactoryAddress = await deployContract(hre, "GnosisSafeProxyFactory")
+        // Deploy Gnosis Safe factory
+        const gnosisSafeProxyFactoryAddress = await deployContract(hre, "GnosisSafeProxyFactory")
 
-    // Deply module proxy factory
-    const moduleProxyFactoryAddress = await deployContract(hre, "ModuleProxyFactory")
+        // Deply module proxy factory
+        const moduleProxyFactoryAddress = await deployContract(hre, "ModuleProxyFactory")
 
-    // Deply compatibilit fallback handler
-    const compatibilityFallbackHandler = await deployContract(hre, "CompatibilityFallbackHandler")
+        // Deply compatibilit fallback handler
+        const compatibilityFallbackHandler = await deployContract(hre, "CompatibilityFallbackHandler")
 
-    // Deploy multisend contract
-    const multisendAddress = await deployContract(hre, "MultiSend")
+        // Deploy multisend contract
+        const multisendAddress = await deployContract(hre, "MultiSend")
 
-    // Deploy weth for loot and shares
-    const lootSingletonAddress = await deployContract(hre, "Loot")
-    const sharesSingletonAddress = await deployContract(hre, "Shares")
+        // Deploy weth for loot and shares
+        const lootSingletonAddress = await deployContract(hre, "Loot")
+        const sharesSingletonAddress = await deployContract(hre, "Shares")
 
-    // Deploy Baal summoner
-    await deployContract(
-        hre, 
-        "BaalSummoner",
-        baalSingletonAddress, 
-        gnosisSafeSingletonAddress, 
-        compatibilityFallbackHandler, 
-        multisendAddress,
-        gnosisSafeProxyFactoryAddress,
-        moduleProxyFactoryAddress,
-        lootSingletonAddress,
-        sharesSingletonAddress, 
-    )   
+        // Deploy Baal summoner
+        const baalSummonerAddress = await deployContract(
+            hre, 
+            "BaalSummoner",
+        )
+        const baalSummoner = await ethers.getContractAt("BaalSummoner", baalSummonerAddress)
+        await baalSummoner.initialize()
+    } else { // For non-local chains, save artifacts with baal addresses
+        console.log(`Creating Baal contract artifacts...`)
+        const addresses = deployments[0].addresses
+
+        const signer = await getSignerForNetwork(hre)
+        const baalSummoner = (await ethers.getContractFactory("BaalSummoner")).attach(addresses.factory).connect(signer)
+        saveDeployArtifact(hre, "BaalSummoner", baalSummoner)
+
+        const shares = await ethers.getContractAt("Shares", addresses.sharesSingleton)
+        saveDeployArtifact(hre, "Shares", shares)
+
+        const loot = await ethers.getContractAt("Loot", addresses.lootSingleton)
+        saveDeployArtifact(hre, "Loot", loot)
+
+        const mutlisend = await ethers.getContractAt("MultiSend", await baalSummoner.gnosisMultisendLibrary())
+        saveDeployArtifact(hre, "MultiSend", mutlisend)
+
+        const baal = await ethers.getContractAt("Baal", addresses.baalSingleton)
+        saveDeployArtifact(hre, "Baal", baal)
+    }
 };
 export default func;
-func.tags = ['hardhat', 'baal'];
+func.tags = ['baal', ...SUPPORTED_CHAINS, ...LOCAL_CHAINS];
