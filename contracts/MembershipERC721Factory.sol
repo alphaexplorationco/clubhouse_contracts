@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./UpgradeableBeacon.sol";
+import "./CustomUpgradeableBeacon.sol";
 
 import "./MembershipERC721.sol";
 
@@ -33,7 +33,7 @@ contract MembershipERC721Factory is Ownable {
     mapping(address => bool) private proxyRegistry;
 
     constructor(address _initBlueprint, address beaconOwner) {
-        UpgradeableBeacon beacon = new UpgradeableBeacon(_initBlueprint);
+        CustomUpgradeableBeacon beacon = new CustomUpgradeableBeacon(_initBlueprint);
         beacon.transferOwnership(beaconOwner);
         beaconAddress = address(beacon);
     }
@@ -72,7 +72,7 @@ contract MembershipERC721Factory is Ownable {
 
     /// @notice Returns the address for the underlying implementation contract for this factory
     function getImplementation() public view returns (address) {
-        return UpgradeableBeacon(beaconAddress).implementation();
+        return CustomUpgradeableBeacon(beaconAddress).implementation();
     }
 
     /// @notice Returns true if a proxy was created by this factory, false otherwise
