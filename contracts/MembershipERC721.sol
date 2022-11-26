@@ -28,7 +28,7 @@ contract MembershipERC721 is
     mapping(uint256 => uint256) private tokenIdExpiryTimestamps;
 
     // Switch for token transferability
-    bool transferable;
+    bool private transferable;
 
     /* Events */
     /// Expiry timestamp update for a particular token
