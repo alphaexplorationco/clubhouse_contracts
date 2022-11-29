@@ -1,3 +1,3 @@
 module.exports = {
-  skipFiles: ['test', 'UpgradeableBeacon.sol', 'Fixtures.sol']
+  skipFiles: ['test', 'CustomUpgradeableBeacon.sol', 'Fixtures.sol']
 };

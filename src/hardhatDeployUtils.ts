@@ -13,8 +13,6 @@ import fs from "fs";
 import os from "os";
 import { Provider } from "@ethersproject/providers";
 import { DeployOptions, Execute, Receipt } from "hardhat-deploy/types";
-import { hrtime } from "process";
-import { exec } from "child_process";
 
 dotenv.config();
 
