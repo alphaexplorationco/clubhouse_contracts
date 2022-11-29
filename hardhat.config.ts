@@ -12,24 +12,20 @@ const config: HardhatUserConfig = {
       goerli: {
         url: "https://rpc.goerli.mudit.blog/",
         chainId: 5,
-        tags: ["goerli"],
         live: true,
       },
       hardhat: {
         live: false,
         saveDeployments: true,
-        tags: ["hardhat"]
       },
       mumbai: {
         url: "https://rpc-mumbai.maticvigil.com/",
         chainId: 80001,
-        tags: ["mumbai"],
         live: true,
       },
       polygon: {
         url: "https://polygon-rpc.com/",
         chainId: 137,
-        tags: ["polygon"],
         live: true,
       }
   },
