@@ -15,12 +15,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (SUPPORTED_CHAINS.includes(hre.network.name)) {
         const usdcAddress = USDC_CONTRACT_ADDRESSES[hre.network.name as keyof typeof USDC_CONTRACT_ADDRESSES]
         const artifact = await hre.deployments.getArtifact("contracts/fixtures/USDC.sol:USDC")
-        hre.deployments.save("USDC", {abi: artifact.abi, address: usdcAddress })
+        await hre.deployments.save("USDC", {abi: artifact.abi, address: usdcAddress })
     } else {
         const USDC = await ethers.getContractFactory("contracts/test/USDC.sol:USDC")
         const usdc = await USDC.deploy().then(f => f.deployed())
         const artifact = await hre.deployments.getArtifact("contracts/test/USDC.sol:USDC")
-        hre.deployments.save("USDC", {abi: artifact.abi, address: usdc.address })
+        await hre.deployments.save("USDC", {abi: artifact.abi, address: usdc.address })
     }
 };
 export default func;

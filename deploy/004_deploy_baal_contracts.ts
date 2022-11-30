@@ -52,19 +52,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         const signer = await getSignerForNetwork(hre)
         const baalSummoner = (await ethers.getContractFactory("BaalSummoner")).attach(addresses.factory).connect(signer)
-        saveDeployArtifact(hre, "BaalSummoner", baalSummoner)
+        await saveDeployArtifact(hre, "BaalSummoner", baalSummoner)
 
         const shares = await ethers.getContractAt("Shares", addresses.sharesSingleton)
-        saveDeployArtifact(hre, "Shares", shares)
+        await saveDeployArtifact(hre, "Shares", shares)
 
         const loot = await ethers.getContractAt("Loot", addresses.lootSingleton)
-        saveDeployArtifact(hre, "Loot", loot)
+        await saveDeployArtifact(hre, "Loot", loot)
 
         const mutlisend = await ethers.getContractAt("MultiSend", await baalSummoner.gnosisMultisendLibrary())
-        saveDeployArtifact(hre, "MultiSend", mutlisend)
+        await saveDeployArtifact(hre, "MultiSend", mutlisend)
 
         const baal = await ethers.getContractAt("Baal", addresses.baalSingleton)
-        saveDeployArtifact(hre, "Baal", baal)
+        await saveDeployArtifact(hre, "Baal", baal)
     }
 };
 export default func;
