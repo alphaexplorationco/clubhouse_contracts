@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM nikolaik/python-nodejs:python3.11-nodejs18-slim
 
 RUN apt-get update && apt-get install -y git python
 RUN mkdir -p /app
