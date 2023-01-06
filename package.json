@@ -5,7 +5,7 @@
   "main": "yarn add --dev hardhat",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@daohaus/baal-contracts": "https://github.com/HausDAO/Baal#546a58b9271056bfd5c34a952f8cb724acc91a42",
+    "@daohaus/baal-contracts": "https://github.com/HausDAO/Baal#984d7563aefd242e5b82f3acfc851b2e745b3dca",
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",

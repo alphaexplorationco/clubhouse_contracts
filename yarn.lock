@@ -14,9 +14,9 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@daohaus/baal-contracts@https://github.com/HausDAO/Baal#546a58b9271056bfd5c34a952f8cb724acc91a42":
-  version "1.1.0"
-  resolved "https://github.com/HausDAO/Baal#546a58b9271056bfd5c34a952f8cb724acc91a42"
+"@daohaus/baal-contracts@https://github.com/HausDAO/Baal#984d7563aefd242e5b82f3acfc851b2e745b3dca":
+  version "1.2.0"
+  resolved "https://github.com/HausDAO/Baal#984d7563aefd242e5b82f3acfc851b2e745b3dca"
   dependencies:
     "@gnosis.pm/zodiac" "^1.0.3"
     "@opengsn/contracts" "2.2.5"
