@@ -29,9 +29,11 @@ This project uses the [hardhat](https://hardhat.org/) ethereum tools for solidit
 
 Contracts in this repo can be deployed with the convenience commands defined in `package.json`.
 
-`yarn hardhat deploy:hardhat` - Run scripts in `/deploy` for the local hardhat network using [hardhat-deploy](https://www.npmjs.com/package/hardhat-deploy). This will overwrite older deployments and write new artifacts to `deploy.json`.
+`yarn hardhat deploy --network-name hardhat` - Run scripts in `/deploy` for the local hardhat network using [hardhat-deploy](https://www.npmjs.com/package/hardhat-deploy). This will overwrite older deployments and write new artifacts to `deploy.json`.
 
-`yarn hardhat deploy:goerli` - Same as above but for Goerli.
+`yarn hardhat deploy --network-name goerli` - Same as above but for Goerli.
+
+`yarn hardhat deploy --network-name polygon` - Same as above but for Goerli.
 
 #### Caveats
 N.b while deploys use the `hardhat-deploy` plugin to execute scripts and save artifacts etc., [custom functions](https://github.com/alphaexplorationco/clubhouse_contracts/blob/2024199de569ffc4548cbf983acae2b9e399d01d/src/hardhatDeployUtils.ts#L129) are called under the hood to do the actual deployments. This is because `hardhat-deploy` does not support custom signers out of the box, and these are required to deploy contracts via [OpenZeppelin Defender Relays](https://docs.openzeppelin.com/defender/relay).
