@@ -48,7 +48,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         )
     } else { // For non-local chains, save artifacts with baal addresses
         console.log(`Creating Baal contract artifacts...`)
-        const addresses = deployments[0].addresses
+        if (hre.network.name === "mumbai") {
+            var addresses = {
+                lootSingleton: "0x96C615CdD8DF36fb634d629fA053D2BB567D418f",
+                sharesSingleton: "0x2DC90B0647f5A7EbE00B8F3De5e6e0DE47d507B7",
+                baalSingleton: "0x632B887d0A32d5Ace37af3ac14B94F3AF0352Cab",
+                factory: "0x32e4346217ACec790C43EbCDf0AF5BA3E80044Dd",
+            }
+        } else {
+            var addresses = deployments[0].addresses
+        }
 
         const signer = await getSignerForNetwork(hre)
         const baalSummoner = (await ethers.getContractFactory("BaalSummoner")).attach(addresses.factory).connect(signer)
