@@ -50,10 +50,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         console.log(`Creating Baal contract artifacts...`)
         if (hre.network.name === "mumbai") {
             var addresses = {
-                lootSingleton: "0x96C615CdD8DF36fb634d629fA053D2BB567D418f",
-                sharesSingleton: "0x2DC90B0647f5A7EbE00B8F3De5e6e0DE47d507B7",
-                baalSingleton: "0x632B887d0A32d5Ace37af3ac14B94F3AF0352Cab",
-                factory: "0x32e4346217ACec790C43EbCDf0AF5BA3E80044Dd",
+                lootSingleton: "0x1d0f5D1f5E1FB74a86c19309368D434E9f7BB608",
+                sharesSingleton: "0x594AF060c08EeA9f559Bc668484E50596BcB2CFB",
+                baalSingleton: "0x51498dDdd2A8cdeC82932E08A37eBaF346C38EFd",
+                factory: "0x3840453a3907916113dB88bFAc2349533a736c64",
+                valutFactory: "0xbB907b1a769bD338c9d09Fb20C2997ECE5E715a3",
+                tributeMinion: "0x898fc00771c148257a7edbdAD33c1469F4420740",
             }
         } else {
             var addresses = deployments[0].addresses
