@@ -54,6 +54,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 addresses = deployments[0].v102[network].addresses
                 break
             }
+        }
 
         const signer = await getSignerForNetwork(hre)
         const baalSummoner = (await ethers.getContractFactory("BaalSummoner")).attach(addresses.factory).connect(signer)
