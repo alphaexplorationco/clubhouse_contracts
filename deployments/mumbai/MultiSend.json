@@ -1,5 +1,5 @@
 {
-  "address": "0x0000000000000000000000000000000000000000",
+  "address": "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
   "abi": [
     {
       "inputs": [],
@@ -21,7 +21,7 @@
     }
   ],
   "args": [],
-  "numDeployments": 1,
+  "numDeployments": 2,
   "linkedData": {},
   "solcInputHash": "c4f192c3900d5725dcc7f925eda49620",
   "metadata": "{\"compiler\":{\"version\":\"0.8.7+commit.e28d00a7\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transactions\",\"type\":\"bytes\"}],\"name\":\"multiSend\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Nick Dodson - <nick.dodson@consensys.net>Gon\\u00e7alo S\\u00e1 - <goncalo.sa@consensys.net>Stefan George - <stefan@gnosis.io>Richard Meissner - <richard@gnosis.io>\",\"kind\":\"dev\",\"methods\":{\"multiSend(bytes)\":{\"details\":\"Sends multiple transactions and reverts all if one fails.\",\"params\":{\"transactions\":\"Encoded transactions. Each transaction is encoded as a packed bytes of                     operation as a uint8 with 0 for a call or 1 for a delegatecall (=> 1 byte),                     to as a address (=> 20 bytes),                     value as a uint256 (=> 32 bytes),                     data length as a uint256 (=> 32 bytes),                     data as bytes.                     see abi.encodePacked for more information on packed encoding\"}}},\"title\":\"Multi Send - Allows to batch multiple transactions into one.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"multiSend(bytes)\":{\"notice\":\"This method is payable as delegatecalls keep the msg.value from the previous call         If the calling method (e.g. execTransaction) received ETH this would revert otherwise\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"@gnosis.pm/safe-contracts/contracts/libraries/MultiSend.sol\":\"MultiSend\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@gnosis.pm/safe-contracts/contracts/libraries/MultiSend.sol\":{\"keccak256\":\"0xe6bf0d0a7cd22246fe93dc7da134359d9d61cd2671e20384ec3c9e7677fadc55\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://379d2ac2581c22cc52b41c9062b01e2c660ad45f41cef908bd4b23b9f7f41b0a\",\"dweb:/ipfs/QmVVd5sPrHCzYCWdWWUMZujdKX7fEBX1nkHb9QejoDGMAP\"]}},\"version\":1}",
