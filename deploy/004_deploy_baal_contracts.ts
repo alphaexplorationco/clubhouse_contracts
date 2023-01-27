@@ -52,6 +52,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         for (var network in deployments[0].v102) {
             if ((hre.network.name === "mumbai") && (network === "polygonMumbai")) || (hre.network.name === network) {
                 addresses = deployments[0].v102[network].addresses
+                break
             }
         }
 
