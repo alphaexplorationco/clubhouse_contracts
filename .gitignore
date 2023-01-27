@@ -20,3 +20,5 @@ deployments/localhost
 
 # Yarn error logs
 yarn-error.log
+
+/.idea
