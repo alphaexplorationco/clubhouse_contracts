@@ -23407,7 +23407,7 @@
           "linkedData": {}
         },
         "USDC": {
-          "address": "0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e",
+          "address": "0xE097d6B3100777DC31B34dC2c58fB524C2e76921",
           "abi": [
             {
               "anonymous": false,

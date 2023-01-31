@@ -7,7 +7,7 @@ import { Contract } from 'ethers';
 const USDC_CONTRACT_ADDRESSES = {
     "polygon": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
     "goerli": "0x5FfbaC75EFc9547FBc822166feD19B05Cd5890bb",
-    "mumbai": "0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e",
+    "mumbai": "0xE097d6B3100777DC31B34dC2c58fB524C2e76921",
 }
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) { 
